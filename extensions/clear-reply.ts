@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { getAgentDir, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { DEFAULTS, loadSettings, parseSettings, readJevKey, saveSettings, type Settings } from "../lib/settings.ts";
+import { DEFAULTS, loadSettings, onboardingNotice, parseSettings, readJevKey, saveSettings, type Settings } from "../lib/settings.ts";
 import { editorPrompt, eligibleDraft, judge, parseEdited, textContent } from "../lib/review.ts";
 
 type SettingsWeb = Awaited<ReturnType<typeof import("../lib/settings-web.ts").startSettingsWeb>>;
@@ -73,6 +73,12 @@ export default function clearReply(pi: ExtensionAPI) {
     }
     try { key = await readJevKey(); }
     catch { key = ""; ctx.ui.notify("Clear Reply: Jev credentials could not be read. You can still open settings.", "warning"); }
+    if (!configError && !settings.onboardingSeen && ctx.mode === "tui") {
+      ctx.ui.notify(onboardingNotice(settings.language, Boolean(key)), key ? "info" : "warning");
+      const next = { ...settings, onboardingSeen: true };
+      try { await saveSettings(path, next); settings = next; }
+      catch { settings = next; }
+    }
   });
   pi.on("session_before_switch", () => { reset(); });
   pi.on("session_before_fork", () => { reset(); });

@@ -17,8 +17,38 @@ export const DEFAULTS = {
   rewriteTimeoutMs: 30000,
   settingsIdleMinutes: 5,
   instructions: "",
+  // Existing configs omit this field; parseSettings treats a missing flag as already seen.
+  onboardingSeen: true,
 };
 export type Settings = typeof DEFAULTS;
+
+export function detectLocale(env: NodeJS.ProcessEnv = process.env): Settings["language"] {
+  const raw = [env.LC_ALL, env.LC_MESSAGES, env.LANG].find(value => value?.trim())?.trim() ?? "";
+  const locale = raw.split(/[.:@]/)[0]!.replaceAll("_", "-").toLowerCase();
+  return locale === "zh" || locale.startsWith("zh-") ? "zh-CN" : "en";
+}
+
+export function onboardingNotice(language: Settings["language"], keyAvailable: boolean): string {
+  const copy = (en: string, zh: string) => language === "zh-CN" ? zh : en;
+  const intro = copy(
+    "Clear Reply reviews finished replies and only polishes when wording is unclear.",
+    "Clear Reply 会在回复结束后检查表述，只在含糊时润色。",
+  );
+  const key = keyAvailable
+    ? copy(
+        "A Typesafe/Jev API key is configured (TYPESAFE_API_KEY or ~/.config/typesafe/api_key).",
+        "已配置 Typesafe/Jev API key（TYPESAFE_API_KEY 或 ~/.config/typesafe/api_key）。",
+      )
+    : copy(
+        "No Typesafe/Jev API key found — set TYPESAFE_API_KEY or create ~/.config/typesafe/api_key so replies can be polished.",
+        "未找到 Typesafe/Jev API key — 请设置 TYPESAFE_API_KEY 或写入 ~/.config/typesafe/api_key，否则无法润色回复。",
+      );
+  const settings = copy(
+    "Open settings with /clear-reply or /clear-reply settings.",
+    "使用 /clear-reply 或 /clear-reply settings 打开设置。",
+  );
+  return `${intro} ${key} ${settings}`;
+}
 
 export function parseSettings(input: unknown): Settings {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new TypeError("Invalid settings");
@@ -46,8 +76,10 @@ export function parseSettings(input: unknown): Settings {
 export async function loadSettings(path: string): Promise<Settings> {
   try { return parseSettings(JSON.parse(await readFile(path, "utf8"))); }
   catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return { ...DEFAULTS };
-    throw error; // Never silently overwrite malformed settings.
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; // Never silently overwrite malformed settings.
+    const settings = { ...DEFAULTS, language: detectLocale(), onboardingSeen: false };
+    await saveSettings(path, settings);
+    return settings;
   }
 }
 

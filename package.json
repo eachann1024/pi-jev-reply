@@ -1,6 +1,6 @@
 {
   "name": "@each1024/pi-jev-reply",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Clearer Pi replies with Jev review, optional rewrite/visuals, and on-demand bilingual settings.",
   "type": "module",
   "license": "MIT",

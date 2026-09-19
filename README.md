@@ -21,7 +21,9 @@
 npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-reply
 ```
 
-Run `/reload`, then `/clear-reply` to open settings. Requires Pi `>= 0.85.1`, Node `>= 22.18.0`, and a Jev API key.
+Run `/reload`. On the first TUI session, if `clear-reply.json` does not exist yet, Clear Reply detects the settings UI language from `LC_ALL` / `LC_MESSAGES` / `LANG` (`zh*` → `zh-CN`, otherwise `en`), writes that file, and shows a one-time welcome. Later sessions keep the saved language; replies stay in the draft's language.
+
+Requires Pi `>= 0.85.1`, Node `>= 22.18.0`, and a Jev API key (`TYPESAFE_API_KEY` or `~/.config/typesafe/api_key`). Open `/clear-reply` or `/clear-reply settings` anytime.
 
 ## Workflow
 
@@ -71,7 +73,7 @@ The UI language changes only the settings page; it never changes the reply langu
 
 ## Configuration
 
-`clear-reply.json` lives in the Pi agent directory (honouring `PI_CODING_AGENT_DIR`). Defaults are configurable: enablement, chosen rewrite model, rewrite/visual switches, thresholds, Jev model, timeouts, draft hiding, idle timeout, and custom review instructions.
+`clear-reply.json` lives in the Pi agent directory (honouring `PI_CODING_AGENT_DIR`). The first missing-file load creates it with the detected UI language. Defaults are configurable: enablement, chosen rewrite model, rewrite/visual switches, thresholds, Jev model, timeouts, draft hiding, idle timeout, and custom review instructions.
 
 Jev credentials are read from, in order:
 

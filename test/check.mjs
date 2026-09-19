@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { DEFAULTS, loadSettings, parseSettings, saveSettings } from '../lib/settings.ts';
+import { DEFAULTS, detectLocale, loadSettings, onboardingNotice, parseSettings, saveSettings } from '../lib/settings.ts';
 import { eligibleDraft, parseDecision, parseEdited } from '../lib/review.ts';
 import { startSettingsWeb } from '../lib/settings-web.ts';
 
@@ -10,6 +10,14 @@ const temp = await mkdtemp(join(tmpdir(), 'pi-jev-reply-'));
 const originalFetch = globalThis.fetch;
 const oldDir = process.env.PI_CODING_AGENT_DIR;
 const oldKey = process.env.TYPESAFE_API_KEY;
+const localeKeys = ['LANG', 'LC_ALL', 'LC_MESSAGES'];
+const oldLocale = Object.fromEntries(localeKeys.map(key => [key, process.env[key]]));
+const restoreLocale = () => {
+  for (const key of localeKeys) {
+    if (oldLocale[key] === undefined) delete process.env[key];
+    else process.env[key] = oldLocale[key];
+  }
+};
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const score = (rewrite = .98, visual = 'none') => ({ answers: {
   needs_rewrite: { type: 'noul', noul: rewrite },
@@ -18,15 +26,49 @@ const score = (rewrite = .98, visual = 'none') => ({ answers: {
 let web;
 try {
   assert.equal(DEFAULTS.language, 'en');
+  assert.equal(DEFAULTS.onboardingSeen, true);
   assert.equal(DEFAULTS.rewriteModel, '');
+  assert.equal(detectLocale({}), 'en');
+  assert.equal(detectLocale({ LANG: 'en_US.UTF-8' }), 'en');
+  assert.equal(detectLocale({ LANG: 'de_DE' }), 'en');
+  assert.equal(detectLocale({ LANG: 'C' }), 'en');
+  assert.equal(detectLocale({ LANG: 'zh' }), 'zh-CN');
+  assert.equal(detectLocale({ LANG: 'zh_CN.UTF-8' }), 'zh-CN');
+  assert.equal(detectLocale({ LANG: 'zh-Hans' }), 'zh-CN');
+  assert.equal(detectLocale({ LANG: 'zh_TW' }), 'zh-CN');
+  assert.equal(detectLocale({ LC_ALL: 'C', LANG: 'zh_CN.UTF-8' }), 'en');
+  assert.equal(detectLocale({ LC_ALL: '', LC_MESSAGES: 'zh_CN.UTF-8', LANG: 'en_US.UTF-8' }), 'zh-CN');
+  assert.equal(detectLocale({ LC_MESSAGES: 'zh-Hans.UTF-8' }), 'zh-CN');
+  assert.match(onboardingNotice('en', false), /No Typesafe\/Jev API key found/);
+  assert.match(onboardingNotice('zh-CN', false), /未找到 Typesafe\/Jev API key/);
+  assert.match(onboardingNotice('en', true), /\/clear-reply settings/);
   assert.throws(() => parseSettings({ rewriteThreshold: NaN }));
   assert.throws(() => parseSettings({ settingsIdleMinutes: 0 }));
   assert.throws(() => parseSettings({ rewriteModel: 'loop' }));
   assert.throws(() => parseSettings({ unknown: true }));
   assert.equal(parseSettings({ rewriteModel: 'test/provider/model' }).rewriteModel, 'test/provider/model');
+  assert.equal(parseSettings({ language: 'en' }).onboardingSeen, true, 'legacy configs skip onboarding');
   const config = join(temp, 'clear-reply.json');
   await saveSettings(config, DEFAULTS);
   assert.deepEqual(await loadSettings(config), DEFAULTS);
+  const firstRun = join(temp, 'first-run', 'clear-reply.json');
+  delete process.env.LC_ALL;
+  delete process.env.LC_MESSAGES;
+  process.env.LANG = 'zh_CN.UTF-8';
+  const created = await loadSettings(firstRun);
+  assert.equal(created.language, 'zh-CN');
+  assert.equal(created.onboardingSeen, false);
+  assert.equal(JSON.parse(await readFile(firstRun, 'utf8')).language, 'zh-CN');
+  process.env.LANG = 'en_US.UTF-8';
+  const reread = await loadSettings(firstRun);
+  assert.equal(reread.language, 'zh-CN', 'existing language is not overwritten');
+  assert.equal(reread.onboardingSeen, false);
+  const legacy = join(temp, 'legacy.json');
+  await writeFile(legacy, `${JSON.stringify({ language: 'en', enabled: true })}\n`);
+  const legacyLoaded = await loadSettings(legacy);
+  assert.equal(legacyLoaded.language, 'en');
+  assert.equal(legacyLoaded.onboardingSeen, true);
+  assert.equal('onboardingSeen' in JSON.parse(await readFile(legacy, 'utf8')), false, 'legacy file stays untouched');
   await writeFile(config, '{');
   await assert.rejects(loadSettings(config));
   assert.equal(await readFile(config, 'utf8'), '{');
@@ -102,6 +144,25 @@ try {
   assert.equal(await hooks.get('message_end')({ message }, ctx), undefined);
   assert.equal(notifications.length, 1, 'failures keep original and notify once');
   await hooks.get('session_shutdown')({}, ctx);
+  await rm(config, { force: true });
+  delete process.env.LC_ALL;
+  delete process.env.LC_MESSAGES;
+  delete process.env.TYPESAFE_API_KEY;
+  process.env.LANG = 'zh_CN.UTF-8';
+  const beforeOnboarding = notifications.length;
+  await hooks.get('session_start')({}, { ...ctx, mode: 'rpc' });
+  assert.equal(notifications.length, beforeOnboarding, 'non-TUI first load does not welcome');
+  assert.equal(JSON.parse(await readFile(config, 'utf8')).onboardingSeen, false);
+  await hooks.get('session_start')({}, ctx);
+  assert.equal(notifications.length, beforeOnboarding + 1, 'first TUI session shows onboarding once');
+  assert.equal(notifications.at(-1), onboardingNotice('zh-CN', false));
+  const welcomed = JSON.parse(await readFile(config, 'utf8'));
+  assert.equal(welcomed.language, 'zh-CN');
+  assert.equal(welcomed.onboardingSeen, true);
+  await hooks.get('session_start')({}, ctx);
+  assert.equal(notifications.length, beforeOnboarding + 1, 'completed onboarding does not repeat');
+  await hooks.get('session_shutdown')({}, ctx);
+  process.env.TYPESAFE_API_KEY = 'test-only-key';
   globalThis.fetch = originalFetch;
 
   // Real loopback endpoint, authentication, validation and automatic shutdown.
@@ -147,5 +208,6 @@ try {
   globalThis.fetch = originalFetch;
   if (oldDir === undefined) delete process.env.PI_CODING_AGENT_DIR; else process.env.PI_CODING_AGENT_DIR = oldDir;
   if (oldKey === undefined) delete process.env.TYPESAFE_API_KEY; else process.env.TYPESAFE_API_KEY = oldKey;
+  restoreLocale();
   await rm(temp, { recursive: true, force: true });
 }

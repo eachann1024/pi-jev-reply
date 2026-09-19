@@ -21,7 +21,9 @@
 npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-reply
 ```
 
-在 Pi 执行 `/reload`，再执行 `/clear-reply` 打开设置。需要 Pi `>= 0.85.1`、Node `>= 22.18.0` 和 Jev API key。
+在 Pi 执行 `/reload`。第一次进入 TUI 且还没有 `clear-reply.json` 时，会从 `LC_ALL` / `LC_MESSAGES` / `LANG` 检测设置界面语言（`zh*` → `zh-CN`，否则 `en`），写入配置，并显示一次性欢迎说明。之后沿用已保存的语言；回复语言仍跟随原稿。
+
+需要 Pi `>= 0.85.1`、Node `>= 22.18.0` 和 Jev API key（`TYPESAFE_API_KEY` 或 `~/.config/typesafe/api_key`）。随时可用 `/clear-reply` 或 `/clear-reply settings` 打开设置。
 
 ## 工作流
 
@@ -71,7 +73,7 @@ npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-r
 
 ## 配置与密钥
 
-配置保存到 Pi agent 目录的 `clear-reply.json`（遵守 `PI_CODING_AGENT_DIR`）。开关、改写模型、改写／视觉选项、阈值、Jev 模型、超时、隐藏草稿、闲置时长和审查说明都可调整。
+配置保存到 Pi agent 目录的 `clear-reply.json`（遵守 `PI_CODING_AGENT_DIR`）。首次缺少该文件时会按检测到的界面语言创建。开关、改写模型、改写／视觉选项、阈值、Jev 模型、超时、隐藏草稿、闲置时长和审查说明都可调整。
 
 Jev key 按以下顺序读取：
 
