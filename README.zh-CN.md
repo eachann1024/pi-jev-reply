@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.4/assets/hero.png" alt="回复经过清晰度检查" width="100%" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.0/assets/hero.png" alt="回复经过清晰度检查" width="100%" />
 </p>
 
 <h1 align="center">Pi Jev Reply</h1>
@@ -28,7 +28,7 @@ npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-r
 ## 工作流
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.4/assets/workflow.svg" alt="两阶段回复清晰度工作流" width="760" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.0/assets/workflow.svg" alt="两阶段回复清晰度工作流" width="760" />
 </p>
 
 | 阶段 | 负责者 | 结果 |
@@ -61,7 +61,7 @@ npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-r
 ## 按需启动的设置页
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.4/assets/settings.png" alt="按需启动的本地设置服务" width="720" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.0/assets/settings.png" alt="按需启动的本地设置服务" width="720" />
 </p>
 
 双语（`en` / `zh-CN`）HTML 设置页只在需要时运行：
