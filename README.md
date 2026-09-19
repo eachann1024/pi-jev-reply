@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.3/assets/hero.png" alt="A reply passing through a clarity gate" width="100%" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.4/assets/hero.png" alt="A reply passing through a clarity gate" width="100%" />
 </p>
 
 <h1 align="center">Pi Jev Reply</h1>
@@ -21,14 +21,14 @@
 npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-reply
 ```
 
-Run `/reload`, then `/clear-reply` to open settings. Requires Pi `>= 0.85.1`, Node `>= 22.18.0`, and a Jev API key.
+Run `/reload`. On first session the extension opens settings so you can finish setup. Later, `/pi-jev-reply` opens the same page (`/clear-reply` still works). Requires Pi `>= 0.85.1`, Node `>= 22.18.0`, and a Jev API key.
 
-On first install the extension creates `clear-reply.json` with a settings UI language guessed from your locale (`zh*` → `zh-CN`, otherwise `en`) and shows a one-time tip in the TUI (including a reminder if the Jev key is missing). Existing config files are never rewritten for language.
+On first install the extension creates `clear-reply.json` with a settings UI language guessed from your locale (`zh*` → `zh-CN`, otherwise `en`) and opens the settings page once. Existing config files are never rewritten for language.
 
 ## Workflow
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.3/assets/workflow.svg" alt="Two-stage reply clarity workflow" width="760" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.4/assets/workflow.svg" alt="Two-stage reply clarity workflow" width="760" />
 </p>
 
 | Stage | Owner | Result |
@@ -51,9 +51,9 @@ Explicit visual asks (flowchart / table / chart) and refusals are honored even i
 ## Controls
 
 ```text
-/clear-reply                 Open the local settings page
-/clear-reply on | off        Toggle processing and save immediately
-/clear-reply status          Show enabled state, Jev-key status, and active model
+/pi-jev-reply                 Open the local settings page
+/pi-jev-reply on | off        Toggle processing and save immediately
+/pi-jev-reply status          Show enabled state, Jev-key status, and active model
 ```
 
 Settings apply immediately—no restart or `/reload` is needed after saving.
@@ -61,7 +61,7 @@ Settings apply immediately—no restart or `/reload` is needed after saving.
 ## Settings without background noise
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.3/assets/settings.png" alt="On-demand local settings service" width="720" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.4/assets/settings.png" alt="On-demand local settings service" width="720" />
 </p>
 
 The bilingual (`en` / `zh-CN`) HTML settings page is served only on demand:

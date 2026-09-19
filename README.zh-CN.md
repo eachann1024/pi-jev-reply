@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.3/assets/hero.png" alt="回复经过清晰度检查" width="100%" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.4/assets/hero.png" alt="回复经过清晰度检查" width="100%" />
 </p>
 
 <h1 align="center">Pi Jev Reply</h1>
@@ -21,14 +21,14 @@
 npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-reply
 ```
 
-在 Pi 执行 `/reload`，再执行 `/clear-reply` 打开设置。需要 Pi `>= 0.85.1`、Node `>= 22.18.0` 和 Jev API key。
+在 Pi 执行 `/reload`。首次会话会打开设置页完成初始化。之后用 `/pi-jev-reply` 打开同一页面（`/clear-reply` 仍可用）。需要 Pi `>= 0.85.1`、Node `>= 22.18.0` 和 Jev API key。
 
-首次安装会按系统语言环境自动写入 `clear-reply.json` 的设置界面语言（`zh*` → `zh-CN`，否则 `en`），并在 TUI 里提示一次（未配置 Jev 密钥时会提醒）。已有配置文件不会被改写语言。
+首次安装会按系统语言环境自动写入 `clear-reply.json` 的设置界面语言（`zh*` → `zh-CN`，否则 `en`），并打开一次设置页。已有配置文件不会被改写语言。
 
 ## 工作流
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.3/assets/workflow.svg" alt="两阶段回复清晰度工作流" width="760" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.4/assets/workflow.svg" alt="两阶段回复清晰度工作流" width="760" />
 </p>
 
 | 阶段 | 负责者 | 结果 |
@@ -51,9 +51,9 @@ npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-r
 ## 命令
 
 ```text
-/clear-reply                 打开本地设置页
-/clear-reply on | off        开关处理并立即保存
-/clear-reply status          查看开关、Jev key 和当前模型
+/pi-jev-reply                 打开本地设置页
+/pi-jev-reply on | off        开关处理并立即保存
+/pi-jev-reply status          查看开关、Jev key 和当前模型
 ```
 
 设置保存后立即生效，无需重启或再次 `/reload`。
@@ -61,7 +61,7 @@ npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-r
 ## 按需启动的设置页
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.3/assets/settings.png" alt="按需启动的本地设置服务" width="720" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.4/assets/settings.png" alt="按需启动的本地设置服务" width="720" />
 </p>
 
 双语（`en` / `zh-CN`）HTML 设置页只在需要时运行：

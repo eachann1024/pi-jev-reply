@@ -74,20 +74,16 @@ export default function clearReply(pi: ExtensionAPI) {
       configError = false;
     } catch {
       configError = true;
-      ctx.ui.notify("Clear Reply: cannot read settings. Existing files were not changed.", "warning");
+      ctx.ui.notify("pi-jev-reply: cannot read settings. Existing files were not changed.", "warning");
     }
     try { key = await readJevKey(); }
-    catch { key = ""; ctx.ui.notify("Clear Reply: Jev credentials could not be read. You can still open settings.", "warning"); }
+    catch { key = ""; ctx.ui.notify("pi-jev-reply: Jev credentials could not be read. You can still open settings.", "warning"); }
     if (firstRun && ctx.mode === "tui") {
-      const tip = copy(
-        key
-          ? "Clear Reply is on. It only polishes unclear wording (and may add a small visual). Open /clear-reply for settings."
-          : "Clear Reply is on, but no Jev key yet. Set TYPESAFE_API_KEY or ~/.config/typesafe/api_key, then /clear-reply. It only polishes when wording is unclear.",
-        key
-          ? "回复检查已开启：只在表述含糊时润色（必要时配小图）。输入 /clear-reply 打开设置。"
-          : "回复检查已开启，但尚未配置 Jev 密钥。请设置 TYPESAFE_API_KEY 或写入 ~/.config/typesafe/api_key，再执行 /clear-reply。仅在表述含糊时才会润色。",
-      );
-      ctx.ui.notify(tip, "info");
+      ctx.ui.notify(copy(
+        "pi-jev-reply installed. Opening settings so you can finish setup (Jev key, rewrite, visuals).",
+        "已安装 pi-jev-reply，正在打开设置页完成初始化（Jev 密钥、改写与可视化）。",
+      ), "info");
+      await openSettings(ctx);
     }
   });
   pi.on("session_before_switch", () => { reset(); });
@@ -131,14 +127,14 @@ export default function clearReply(pi: ExtensionAPI) {
     } catch {
       if (!signal.aborted && !warned) {
         warned = true;
-        ctx.ui.notify(copy("Clear Reply could not finish checking this reply. The original was kept.", "回复检查未完成，已保留原回复。"), "warning");
+        ctx.ui.notify(copy("pi-jev-reply could not finish checking this reply. The original was kept.", "pi-jev-reply 未完成检查，已保留原回复。"), "warning");
       }
     }
   });
 
   async function openSettings(ctx: ExtensionContext) {
     context = ctx;
-    if (ctx.mode !== "tui") { ctx.ui.notify("Clear Reply HTML settings require Pi interactive mode.", "warning"); return; }
+    if (ctx.mode !== "tui") { ctx.ui.notify("pi-jev-reply HTML settings require Pi interactive mode.", "warning"); return; }
     const operation = lifetime;
     try {
       try { key = await readJevKey(); } catch { key = ""; }
@@ -180,27 +176,32 @@ export default function clearReply(pi: ExtensionAPI) {
     }
   }
 
-  pi.registerCommand("clear-reply", {
-    description: "Open Clear Reply settings; or use on, off, status",
-    handler: async (args, ctx) => {
+  const command = {
+    description: "Open pi-jev-reply settings; or use on, off, status",
+    handler: async (args: string, ctx: ExtensionContext) => {
       const action = args.trim().toLowerCase();
       if (!action || action === "settings") { await openSettings(ctx); return; }
       if (action === "status") {
         ctx.ui.notify(copy(
-          `Clear Reply: ${active() ? "enabled" : "inactive"}; Jev key ${key ? "configured" : "missing"}; model ${settings.rewriteModel || "current main model"}.`,
-          `回复检查：${active() ? "已启用" : "未启用"}；Jev 密钥${key ? "已配置" : "缺失"}；模型：${settings.rewriteModel || "当前主模型"}。`,
+          `pi-jev-reply: ${active() ? "enabled" : "inactive"}; Jev key ${key ? "configured" : "missing"}; model ${settings.rewriteModel || "current main model"}.`,
+          `pi-jev-reply：${active() ? "已启用" : "未启用"}；Jev 密钥${key ? "已配置" : "缺失"}；模型：${settings.rewriteModel || "当前主模型"}。`,
         ), "info");
         return;
       }
-      if (action !== "on" && action !== "off") { ctx.ui.notify("Usage: /clear-reply [settings|on|off|status]", "info"); return; }
+      if (action !== "on" && action !== "off") {
+        ctx.ui.notify("Usage: /pi-jev-reply [settings|on|off|status]", "info");
+        return;
+      }
       try {
         if (configError) throw new Error("Existing settings need repair");
         const next = { ...settings, enabled: action === "on" };
         await saveSettings(settingsPath(), next);
         settings = next;
         if (!next.enabled) { lifetime.abort(); lifetime = new AbortController(); }
-        ctx.ui.notify(copy(`Clear Reply ${action}.`, `回复检查已${action === "on" ? "开启" : "关闭"}。`), "info");
+        ctx.ui.notify(copy(`pi-jev-reply ${action}.`, `pi-jev-reply 已${action === "on" ? "开启" : "关闭"}。`), "info");
       } catch { ctx.ui.notify(copy("Settings were not saved. Check the configuration file.", "设置未保存，请检查配置文件。"), "error"); }
     },
-  });
+  };
+  pi.registerCommand("pi-jev-reply", command);
+  pi.registerCommand("clear-reply", command);
 }

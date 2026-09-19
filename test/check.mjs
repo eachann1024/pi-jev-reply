@@ -81,7 +81,7 @@ try {
   extension({
     on: (name, fn) => hooks.set(name, fn), registerCommand: (name, command) => commands.set(name, command),
     registerMarkdownTransformer: fn => { transformer = fn; }, appendEntry: (...entry) => entries.push(entry),
-    exec: () => { throw Error('Settings were not requested'); },
+    exec: async () => ({ code: 0 }),
   });
   globalThis.fetch = async (_, options) => {
     calls++;
@@ -124,7 +124,8 @@ try {
   const created = JSON.parse(await readFile(join(freshDir, 'clear-reply.json'), 'utf8'));
   assert.equal(created.language, 'zh-CN');
   assert.equal(onboard.length, 1);
-  assert.match(onboard[0], /润色|polishes|\/clear-reply/);
+  assert.match(onboard[0], /初始化|Opening settings|\/pi-jev-reply/);
+  assert.ok(commands.has('pi-jev-reply'));
   await rm(freshDir, { recursive: true, force: true });
   process.env.PI_CODING_AGENT_DIR = temp;
   process.env.TYPESAFE_API_KEY = 'test-only-key';
@@ -169,7 +170,7 @@ try {
   const reopened = await startSettingsWeb(() => ({ settings }), async () => {}, () => 5000);
   assert.notEqual(reopened.url, web.url);
   reopened.close();
-  console.log('Clear Reply checks passed: model selection, preserved fallback, schema, HTTP security and idle shutdown.');
+  console.log('pi-jev-reply checks passed: model selection, preserved fallback, schema, HTTP security and idle shutdown.');
 } finally {
   web?.close();
   globalThis.fetch = originalFetch;

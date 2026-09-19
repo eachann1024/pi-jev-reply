@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Pi Clear Reply Settings</title>
+  <title>pi-jev-reply Settings</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -257,7 +257,7 @@
 <main>
   <header>
     <div>
-      <h1 id="mainTitle">Pi Clear Reply</h1>
+      <h1 id="mainTitle">pi-jev-reply</h1>
       <p class="tagline" id="tagline"></p>
     </div>
     <nav aria-label="Language">
@@ -399,8 +399,12 @@ if (location.hash) {
 
 const I18N = {
   documentTitle: {
-    en: 'Pi Clear Reply Settings',
-    'zh-CN': 'Pi Clear Reply 设置'
+    en: 'pi-jev-reply Settings',
+    'zh-CN': 'pi-jev-reply 设置'
+  },
+  mainTitle: {
+    en: 'pi-jev-reply',
+    'zh-CN': 'pi-jev-reply'
   },
   tagline: {
     en: 'Clear replies, with a diagram when it helps',
@@ -423,8 +427,8 @@ const I18N = {
     'zh-CN': '隐私说明：Jev 审核服务接收回复草稿以评估清晰度与结构。可选改写仅在触发时使用所选模型。'
   },
   labelEnabled: {
-    en: 'Enable Clear Reply',
-    'zh-CN': '启用 Clear Reply'
+    en: 'Enable pi-jev-reply',
+    'zh-CN': '启用 pi-jev-reply'
   },
   descEnabled: {
     en: 'Review drafts and improve response clarity',
@@ -642,7 +646,7 @@ function applyLang() {
   document.querySelector('nav').setAttribute('aria-label', currentLang === 'zh-CN' ? '界面语言' : 'Interface language');
 
   const textIds = [
-    'tagline',
+    'mainTitle', 'tagline',
     'labelEnabled', 'descEnabled',
     'labelLanguage',
     'labelRewrite', 'descRewrite',
