@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { getAgentDir, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { DEFAULTS, loadSettings, parseSettings, readJevKey, saveSettings, type Settings } from "../lib/settings.ts";
+import { DEFAULTS, loadOrCreateSettings, parseSettings, readJevKey, saveSettings, type Settings } from "../lib/settings.ts";
 import { editorPrompt, eligibleDraft, judge, parseEdited, textContent } from "../lib/review.ts";
 
 type SettingsWeb = Awaited<ReturnType<typeof import("../lib/settings-web.ts").startSettingsWeb>>;
@@ -28,7 +28,7 @@ async function limited<T>(milliseconds: number, signal: AbortSignal, run: (signa
 }
 
 export default function clearReply(pi: ExtensionAPI) {
-  const path = join(getAgentDir(), "clear-reply.json");
+  const settingsPath = () => join(getAgentDir(), "clear-reply.json");
   let settings: Settings = { ...DEFAULTS };
   let key = "";
   let context: ExtensionContext | undefined;
@@ -66,13 +66,29 @@ export default function clearReply(pi: ExtensionAPI) {
   pi.on("session_start", async (_, ctx) => {
     reset();
     context = ctx;
-    try { settings = await loadSettings(path); configError = false; }
-    catch {
+    let firstRun = false;
+    try {
+      const loaded = await loadOrCreateSettings(settingsPath());
+      settings = loaded.settings;
+      firstRun = loaded.firstRun;
+      configError = false;
+    } catch {
       configError = true;
       ctx.ui.notify("Clear Reply: cannot read settings. Existing files were not changed.", "warning");
     }
     try { key = await readJevKey(); }
     catch { key = ""; ctx.ui.notify("Clear Reply: Jev credentials could not be read. You can still open settings.", "warning"); }
+    if (firstRun && ctx.mode === "tui") {
+      const tip = copy(
+        key
+          ? "Clear Reply is on. It only polishes unclear wording (and may add a small visual). Open /clear-reply for settings."
+          : "Clear Reply is on, but no Jev key yet. Set TYPESAFE_API_KEY or ~/.config/typesafe/api_key, then /clear-reply. It only polishes when wording is unclear.",
+        key
+          ? "回复检查已开启：只在表述含糊时润色（必要时配小图）。输入 /clear-reply 打开设置。"
+          : "回复检查已开启，但尚未配置 Jev 密钥。请设置 TYPESAFE_API_KEY 或写入 ~/.config/typesafe/api_key，再执行 /clear-reply。仅在表述含糊时才会润色。",
+      );
+      ctx.ui.notify(tip, "info");
+    }
   });
   pi.on("session_before_switch", () => { reset(); });
   pi.on("session_before_fork", () => { reset(); });
@@ -141,7 +157,7 @@ export default function clearReply(pi: ExtensionAPI) {
             if (configError) throw new TypeError("Repair clear-reply.json before saving");
             const next = parseSettings(value);
             if (next.rewriteModel && !chooseModel(context ?? ctx, next.rewriteModel)) throw new TypeError("Unknown rewrite model");
-            await saveSettings(path, next);
+            await saveSettings(settingsPath(), next);
             settings = next;
             configError = false;
             warned = false;
@@ -181,7 +197,7 @@ export default function clearReply(pi: ExtensionAPI) {
       try {
         if (configError) throw new Error("Existing settings need repair");
         const next = { ...settings, enabled: action === "on" };
-        await saveSettings(path, next);
+        await saveSettings(settingsPath(), next);
         settings = next;
         if (!next.enabled) { lifetime.abort(); lifetime = new AbortController(); }
         ctx.ui.notify(copy(`Clear Reply ${action}.`, `回复检查已${action === "on" ? "开启" : "关闭"}。`), "info");

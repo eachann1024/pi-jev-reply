@@ -19,6 +19,28 @@ export const DEFAULTS = {
   instructions: "",
 };
 export type Settings = typeof DEFAULTS;
+export type Language = Settings["language"];
+
+/** Detect settings UI language from locale env vars (does not affect reply language). */
+export function detectLanguage(env: NodeJS.ProcessEnv = process.env): Language {
+  const pick = (value: string | undefined) => {
+    if (typeof value !== "string") return undefined;
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    return trimmed;
+  };
+  // LC_ALL overrides everything when set (including C → English UI).
+  const all = pick(env.LC_ALL);
+  const raw = all ?? pick(env.LC_MESSAGES) ?? pick(env.LANG) ?? "";
+  if (!raw || raw === "C" || raw.startsWith("C.")) return "en";
+  const normalized = raw.replace(/-/g, "_").toLowerCase();
+  if (normalized.startsWith("zh")) return "zh-CN";
+  return "en";
+}
+
+export function defaultsForLocale(env: NodeJS.ProcessEnv = process.env): Settings {
+  return { ...DEFAULTS, language: detectLanguage(env) };
+}
 
 export function parseSettings(input: unknown): Settings {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new TypeError("Invalid settings");
@@ -48,6 +70,18 @@ export async function loadSettings(path: string): Promise<Settings> {
   catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return { ...DEFAULTS };
     throw error; // Never silently overwrite malformed settings.
+  }
+}
+
+/** Load settings; on first install (missing file) create locale-aware defaults and mark firstRun. */
+export async function loadOrCreateSettings(path: string, env: NodeJS.ProcessEnv = process.env): Promise<{ settings: Settings; firstRun: boolean }> {
+  try {
+    return { settings: parseSettings(JSON.parse(await readFile(path, "utf8"))), firstRun: false };
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    const settings = defaultsForLocale(env);
+    await saveSettings(path, settings);
+    return { settings, firstRun: true };
   }
 }
 

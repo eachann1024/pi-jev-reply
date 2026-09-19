@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { DEFAULTS, loadSettings, parseSettings, saveSettings } from '../lib/settings.ts';
+import { DEFAULTS, detectLanguage, loadOrCreateSettings, loadSettings, parseSettings, saveSettings } from '../lib/settings.ts';
 import { eligibleDraft, parseDecision, parseEdited } from '../lib/review.ts';
 import { startSettingsWeb } from '../lib/settings-web.ts';
 
@@ -18,6 +18,18 @@ const score = (rewrite = .98, visual = 'none') => ({ answers: {
 let web;
 try {
   assert.equal(DEFAULTS.language, 'en');
+
+  assert.equal(detectLanguage({ LANG: 'zh_CN.UTF-8' }), 'zh-CN');
+  assert.equal(detectLanguage({ LANG: 'en_US.UTF-8' }), 'en');
+  assert.equal(detectLanguage({ LC_ALL: 'C', LANG: 'zh_TW.UTF-8' }), 'en');
+  assert.equal(detectLanguage({ LC_MESSAGES: 'zh-Hans.UTF-8' }), 'zh-CN');
+  const firstPath = join(temp, 'first-run.json');
+  const first = await loadOrCreateSettings(firstPath, { LANG: 'zh_CN.UTF-8' });
+  assert.equal(first.firstRun, true);
+  assert.equal(first.settings.language, 'zh-CN');
+  const again = await loadOrCreateSettings(firstPath, { LANG: 'en_US.UTF-8' });
+  assert.equal(again.firstRun, false);
+  assert.equal(again.settings.language, 'zh-CN', 'existing language is kept');
   assert.equal(DEFAULTS.rewriteModel, '');
   assert.throws(() => parseSettings({ rewriteThreshold: NaN }));
   assert.throws(() => parseSettings({ settingsIdleMinutes: 0 }));
@@ -101,6 +113,22 @@ try {
   assert.equal(await hooks.get('message_end')({ message }, ctx), undefined);
   assert.equal(await hooks.get('message_end')({ message }, ctx), undefined);
   assert.equal(notifications.length, 1, 'failures keep original and notify once');
+
+  // First-run creates locale settings and shows one onboarding tip.
+  const freshDir = await mkdtemp(join(tmpdir(), 'pi-jev-reply-first-'));
+  process.env.PI_CODING_AGENT_DIR = freshDir;
+  process.env.LANG = 'zh_CN.UTF-8';
+  delete process.env.TYPESAFE_API_KEY;
+  const onboard = [];
+  await hooks.get('session_start')({}, { ...ctx, mode: 'tui', ui: { notify: text => onboard.push(text) } });
+  const created = JSON.parse(await readFile(join(freshDir, 'clear-reply.json'), 'utf8'));
+  assert.equal(created.language, 'zh-CN');
+  assert.equal(onboard.length, 1);
+  assert.match(onboard[0], /润色|polishes|\/clear-reply/);
+  await rm(freshDir, { recursive: true, force: true });
+  process.env.PI_CODING_AGENT_DIR = temp;
+  process.env.TYPESAFE_API_KEY = 'test-only-key';
+
   await hooks.get('session_shutdown')({}, ctx);
   globalThis.fetch = originalFetch;
 
