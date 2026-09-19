@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DEFAULTS, detectLanguage, loadOrCreateSettings, loadSettings, parseSettings, saveSettings } from '../lib/settings.ts';
-import { eligibleDraft, parseDecision, parseEdited } from '../lib/review.ts';
+import { applyRequestOverrides, eligibleDraft, parseDecision, parseEdited, requestedVisual } from '../lib/review.ts';
 import { startSettingsWeb } from '../lib/settings-web.ts';
 
 const temp = await mkdtemp(join(tmpdir(), 'pi-jev-reply-'));

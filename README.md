@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.2/assets/hero.png" alt="A reply passing through a clarity gate" width="100%" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.3/assets/hero.png" alt="A reply passing through a clarity gate" width="100%" />
 </p>
 
 <h1 align="center">Pi Jev Reply</h1>
@@ -28,7 +28,7 @@ On first install the extension creates `clear-reply.json` with a settings UI lan
 ## Workflow
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.2/assets/workflow.svg" alt="Two-stage reply clarity workflow" width="760" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.3/assets/workflow.svg" alt="Two-stage reply clarity workflow" width="760" />
 </p>
 
 | Stage | Owner | Result |
@@ -37,6 +37,8 @@ On first install the extension creates `clear-reply.json` with a settings UI lan
 | **Edit** | Main model by default | Rewrites the reply and/or adds a compact static visual, then shows it. |
 
 The extension keeps the original draft if a call fails, times out, or produces an invalid edit. It does not retry itself into a loop. Structural checks still reject edits that drop paths/commands or change numbers.
+
+Explicit visual asks (flowchart / table / chart) and refusals are honored even if Jev is unsure, so those requests stay stable across runs.
 
 ## What changes—and what never does
 
@@ -59,7 +61,7 @@ Settings apply immediately—no restart or `/reload` is needed after saving.
 ## Settings without background noise
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.2/assets/settings.png" alt="On-demand local settings service" width="720" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.1.3/assets/settings.png" alt="On-demand local settings service" width="720" />
 </p>
 
 The bilingual (`en` / `zh-CN`) HTML settings page is served only on demand:

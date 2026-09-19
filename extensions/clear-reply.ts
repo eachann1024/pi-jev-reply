@@ -111,7 +111,6 @@ export default function clearReply(pi: ExtensionAPI) {
     const signal = AbortSignal.any([operation.signal, ...(ctx.signal ? [ctx.signal] : [])]);
     try {
       const decision = await limited(current.reviewTimeoutMs, signal, child => judge(draft, request, current, key, child));
-      if (/(?:不要|无需|不需要)(?:任何)?(?:图|表|可视化)|no (?:charts?|diagrams?|visuals?|tables?)/i.test(request)) decision.visual = "none";
       if (!decision.rewrite && decision.visual === "none") return;
       const model = chooseModel(ctx, current.rewriteModel);
       if (!model) throw new Error("Rewrite model is not available");
