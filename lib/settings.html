@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pi Clear Reply Settings</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --background: light-dark(#f4f3ef, #141614);
+      --foreground: light-dark(#1f241f, #eceee8);
+      --surface: light-dark(#fffcf7, #1d211d);
+      --muted: light-dark(#667066, #a8b0a4);
+      --border: light-dark(#e2ddd4, #3a4038);
+      --accent: light-dark(#2f5a3e, #b7d4b0);
+      --destructive: light-dark(#a52c26, #ffafa5);
+      --ring: var(--accent);
+      --text-sm: .875rem;
+      --text-base: 1rem;
+      --text-lg: 2.25rem;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--foreground);
+      font: var(--text-base)/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 36px 20px 64px;
+    }
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    h1 {
+      font: italic 400 var(--text-lg)/1.08 "Didot", "Bodoni 72", "Iowan Old Style", "Songti SC", "STSong", serif;
+      letter-spacing: .02em;
+      margin: 0;
+    }
+    .tagline {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: var(--text-sm);
+    }
+    nav {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    button {
+      font: inherit;
+      color: inherit;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+    nav button {
+      font-size: var(--text-sm);
+      padding: 4px 10px;
+    }
+    nav button[aria-pressed="true"] {
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    :focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      font-size: var(--text-sm);
+    }
+    .card p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .key-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .key-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .key-badge.ok {
+      background: var(--accent);
+      color: light-dark(#ffffff, #141614);
+    }
+    .key-badge.missing {
+      background: var(--destructive);
+      color: light-dark(#ffffff, #141614);
+    }
+    .status-bar {
+      margin: 0 0 20px;
+      min-height: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: var(--text-sm);
+      flex-wrap: wrap;
+    }
+    #status {
+      font-weight: 500;
+      color: var(--accent);
+    }
+    #status.error {
+      color: var(--destructive);
+    }
+    #retryBtn {
+      padding: 3px 8px;
+      font-size: var(--text-sm);
+    }
+    fieldset {
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+    fieldset:disabled {
+      opacity: .6;
+      pointer-events: none;
+    }
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label {
+      font-size: var(--text-sm);
+      font-weight: 600;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      font-weight: 400;
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin: 2px 0 0;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .label-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .label-title {
+      font-weight: 600;
+      font-size: var(--text-sm);
+    }
+    .label-desc {
+      font-size: var(--text-sm);
+      color: var(--muted);
+    }
+    input[type="text"], input[type="number"], select, textarea {
+      font: inherit;
+      font-size: var(--text-sm);
+      color: var(--foreground);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      width: 100%;
+    }
+    input::placeholder, textarea::placeholder {
+      color: var(--muted);
+      opacity: .8;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 84px;
+    }
+    .field-hint {
+      margin: 2px 0 0;
+      font-size: var(--text-sm);
+      color: var(--muted);
+    }
+    details {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 12px 16px;
+      margin-top: 8px;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: var(--text-sm);
+      color: var(--foreground);
+    }
+    .details-body {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding-top: 14px;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: light-dark(#ffffff, #141614);
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    [hidden] {
+      display: none !important;
+    }
+    @media (max-width: 450px) {
+      h1 { font-size: 1.85rem; }
+      main { padding: 24px 14px 48px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1 id="mainTitle">Pi Clear Reply</h1>
+      <p class="tagline" id="tagline"></p>
+    </div>
+    <nav aria-label="Language">
+      <button type="button" id="lang-en" aria-pressed="true">EN</button>
+      <button type="button" id="lang-zh" aria-pressed="false">中文</button>
+    </nav>
+  </header>
+
+  <div class="status-bar" role="status" aria-live="polite">
+    <span id="status"></span>
+    <button type="button" id="retryBtn" hidden></button>
+  </div>
+
+  <section class="card" id="key-card">
+    <div class="key-header">
+      <span class="key-badge ok" id="key-badge">✓</span>
+      <strong id="key-status-text"></strong>
+    </div>
+    <p id="key-help-text"></p>
+  </section>
+
+  <section class="card" id="privacy-card">
+    <p id="privacy-text"></p>
+  </section>
+
+  <form id="settings-form">
+    <fieldset id="fieldset" disabled>
+      <div class="stack">
+        <label class="checkbox-label" for="field-enabled">
+          <input type="checkbox" id="field-enabled">
+          <span class="label-text">
+            <span class="label-title" id="labelEnabled"></span>
+            <span class="label-desc" id="descEnabled"></span>
+          </span>
+        </label>
+
+        <div class="field">
+          <label for="field-language" id="labelLanguage"></label>
+          <select id="field-language">
+            <option value="en">English</option>
+            <option value="zh-CN">简体中文 (zh-CN)</option>
+          </select>
+        </div>
+
+        <label class="checkbox-label" for="field-rewrite">
+          <input type="checkbox" id="field-rewrite">
+          <span class="label-text">
+            <span class="label-title" id="labelRewrite"></span>
+            <span class="label-desc" id="descRewrite"></span>
+          </span>
+        </label>
+
+        <div class="field">
+          <label for="field-rewriteModel" id="labelRewriteModel"></label>
+          <input type="text" id="field-rewriteModel" list="models-datalist" autocomplete="off" maxlength="256">
+          <datalist id="models-datalist"></datalist>
+          <p class="field-hint"><span id="current-model-info"></span></p>
+        </div>
+
+        <label class="checkbox-label" for="field-visuals">
+          <input type="checkbox" id="field-visuals">
+          <span class="label-text">
+            <span class="label-title" id="labelVisuals"></span>
+            <span class="label-desc" id="descVisuals"></span>
+          </span>
+        </label>
+
+        <label class="checkbox-label" for="field-hideDraft">
+          <input type="checkbox" id="field-hideDraft">
+          <span class="label-text">
+            <span class="label-title" id="labelHideDraft"></span>
+            <span class="label-desc" id="descHideDraft"></span>
+          </span>
+        </label>
+
+        <div class="field">
+          <label for="field-instructions" id="labelInstructions"></label>
+          <textarea id="field-instructions" rows="4" maxlength="2000"></textarea>
+          <p class="field-hint" style="display:flex;justify-content:flex-end;"><span><span id="char-count">0</span> / 2000</span></p>
+        </div>
+
+        <details id="advanced-details">
+          <summary id="advancedSummary"></summary>
+          <div class="details-body">
+            <div class="field">
+              <label for="field-rewriteThreshold" id="labelRewriteThreshold"></label>
+              <input type="number" id="field-rewriteThreshold" min="0" max="1" step="any" required>
+              <p class="field-hint" id="descRewriteThreshold"></p>
+            </div>
+
+            <div class="field">
+              <label for="field-visualThreshold" id="labelVisualThreshold"></label>
+              <input type="number" id="field-visualThreshold" min="0" max="1" step="any" required>
+              <p class="field-hint" id="descVisualThreshold"></p>
+            </div>
+
+            <div class="field">
+              <label for="field-jevModel" id="labelJevModel"></label>
+              <input type="text" id="field-jevModel" maxlength="80" pattern="[a-zA-Z0-9_.-]+" required>
+            </div>
+
+            <div class="field">
+              <label for="field-reviewTimeoutMs" id="labelReviewTimeoutMs"></label>
+              <input type="number" id="field-reviewTimeoutMs" min="1000" max="30000" step="1" required>
+              <p class="field-hint" id="descReviewTimeoutMs"></p>
+            </div>
+
+            <div class="field">
+              <label for="field-rewriteTimeoutMs" id="labelRewriteTimeoutMs"></label>
+              <input type="number" id="field-rewriteTimeoutMs" min="1000" max="120000" step="1" required>
+              <p class="field-hint" id="descRewriteTimeoutMs"></p>
+            </div>
+
+            <div class="field">
+              <label for="field-settingsIdleMinutes" id="labelSettingsIdleMinutes"></label>
+              <input type="number" id="field-settingsIdleMinutes" min="1" max="60" step="1" required>
+              <p class="field-hint" id="descSettingsIdleMinutes"></p>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div class="actions">
+        <button type="submit" id="saveBtn" class="btn-primary"></button>
+        <button type="button" id="defaultsBtn"></button>
+      </div>
+    </fieldset>
+  </form>
+</main>
+
+<script>
+// ponytail: In-memory form submission without client delta calculation; sends full settings object. Ceiling: single local settings page. Upgrade path: add dirty-tracking and PATCH endpoint if payload grows.
+
+const $ = (id) => document.getElementById(id);
+const token = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
+if (location.hash) {
+  history.replaceState(null, '', location.pathname + location.search);
+}
+
+const I18N = {
+  documentTitle: {
+    en: 'Pi Clear Reply Settings',
+    'zh-CN': 'Pi Clear Reply 设置'
+  },
+  tagline: {
+    en: 'Clear replies, with a diagram when it helps',
+    'zh-CN': '把回复说清楚，必要时配图'
+  },
+  keyConfigured: {
+    en: 'Typesafe API Key: Configured',
+    'zh-CN': 'Typesafe API 密钥：已配置'
+  },
+  keyMissing: {
+    en: 'Typesafe API Key: Not configured',
+    'zh-CN': 'Typesafe API 密钥：未配置'
+  },
+  keyHelp: {
+    en: 'To configure, set the TYPESAFE_API_KEY environment variable or write to ~/.config/typesafe/api_key.',
+    'zh-CN': '如需配置，请设置 TYPESAFE_API_KEY 环境变量或写入 ~/.config/typesafe/api_key。'
+  },
+  privacyText: {
+    en: 'Privacy note: Jev receives reply drafts to evaluate clarity and structure. Optional rewrite uses the selected model only when triggered.',
+    'zh-CN': '隐私说明：Jev 审核服务接收回复草稿以评估清晰度与结构。可选改写仅在触发时使用所选模型。'
+  },
+  labelEnabled: {
+    en: 'Enable Clear Reply',
+    'zh-CN': '启用 Clear Reply'
+  },
+  descEnabled: {
+    en: 'Review drafts and improve response clarity',
+    'zh-CN': '审核草稿并提升回复清晰度'
+  },
+  labelLanguage: {
+    en: 'Settings language',
+    'zh-CN': '设置界面语言'
+  },
+  labelRewrite: {
+    en: 'Enable AI Rewrite',
+    'zh-CN': '启用智能改写'
+  },
+  descRewrite: {
+    en: 'Rewrite when the unclear-wording score reaches the threshold',
+    'zh-CN': '当回复清晰度不足时自动调用模型改写'
+  },
+  labelVisuals: {
+    en: 'Enable Visuals',
+    'zh-CN': '启用可视化建议'
+  },
+  descVisuals: {
+    en: 'Suggest diagrams, charts, and tables when helpful',
+    'zh-CN': '在适当时建议图表、流程图和结构化表格'
+  },
+  labelHideDraft: {
+    en: 'Hide streaming drafts',
+    'zh-CN': '隐藏流式草稿'
+  },
+  descHideDraft: {
+    en: 'Show native Pi replies only after review; custom transcript views may differ',
+    'zh-CN': 'Pi 原生界面在检查后显示回复；自定义对话界面可能不适用'
+  },
+  labelRewriteModel: {
+    en: 'Rewrite Model',
+    'zh-CN': '改写模型'
+  },
+  placeholderRewriteModel: {
+    en: 'Current main model',
+    'zh-CN': '当前主模型'
+  },
+  currentModelPrefix: {
+    en: 'Current main model: ',
+    'zh-CN': '当前主模型：'
+  },
+  unknownModel: {
+    en: 'default',
+    'zh-CN': '默认'
+  },
+  labelInstructions: {
+    en: 'Custom Instructions (max 2,000 chars)',
+    'zh-CN': '自定义改写指令（最多 2,000 字）'
+  },
+  placeholderInstructions: {
+    en: 'Additional instructions for tone, style, or specific formatting rules…',
+    'zh-CN': '针对语气、风格或特定排版格式的补充指令…'
+  },
+  advancedSummary: {
+    en: 'Advanced Options',
+    'zh-CN': '高级选项'
+  },
+  labelRewriteThreshold: {
+    en: 'Rewrite Threshold (0..1)',
+    'zh-CN': '改写阈值 (0..1)'
+  },
+  descRewriteThreshold: {
+    en: 'Unclear-wording score at or above this triggers rewrite (default 0.70)',
+    'zh-CN': '含糊程度得分达到此阈值时触发改写（默认 0.70）'
+  },
+  labelVisualThreshold: {
+    en: 'Visual Threshold (0..1)',
+    'zh-CN': '可视化阈值 (0..1)'
+  },
+  descVisualThreshold: {
+    en: 'Opportunity score above this suggests visuals (default 0.75)',
+    'zh-CN': '可视化机会得分高于此阈值时推荐视觉元素（默认 0.75）'
+  },
+  labelJevModel: {
+    en: 'Jev Review Model',
+    'zh-CN': 'Jev 审核模型'
+  },
+  labelReviewTimeoutMs: {
+    en: 'Review Timeout (ms)',
+    'zh-CN': '审核超时（毫秒）'
+  },
+  descReviewTimeoutMs: {
+    en: 'Range: 1,000 – 30,000 ms',
+    'zh-CN': '允许范围：1,000 – 30,000 毫秒'
+  },
+  labelRewriteTimeoutMs: {
+    en: 'Rewrite Timeout (ms)',
+    'zh-CN': '改写超时（毫秒）'
+  },
+  descRewriteTimeoutMs: {
+    en: 'Range: 1,000 – 120,000 ms',
+    'zh-CN': '允许范围：1,000 – 120,000 毫秒'
+  },
+  labelSettingsIdleMinutes: {
+    en: 'Settings Idle Timeout (minutes)',
+    'zh-CN': '设置页面空闲超时（分钟）'
+  },
+  descSettingsIdleMinutes: {
+    en: 'Stops after no settings requests for this long (1–60 min); no background polling',
+    'zh-CN': '此时长内没有设置请求则关闭（1–60 分钟）；不做后台轮询'
+  },
+  saveBtn: {
+    en: 'Save Settings',
+    'zh-CN': '保存设置'
+  },
+  defaultsBtn: {
+    en: 'Reset Defaults',
+    'zh-CN': '恢复默认'
+  },
+  retryBtn: {
+    en: 'Retry',
+    'zh-CN': '重试'
+  },
+  loading: {
+    en: 'Loading settings…',
+    'zh-CN': '正在加载设置…'
+  },
+  ready: {
+    en: 'Ready',
+    'zh-CN': '就绪'
+  },
+  saving: {
+    en: 'Saving settings…',
+    'zh-CN': '正在保存设置…'
+  },
+  saved: {
+    en: 'Settings saved',
+    'zh-CN': '设置已保存'
+  },
+  saveFailed: {
+    en: 'Failed to save: ',
+    'zh-CN': '保存失败：'
+  },
+  defaultsRestored: {
+    en: 'Defaults restored in form (unsaved)',
+    'zh-CN': '已恢复默认值（待保存）'
+  },
+  confirmReset: {
+    en: 'Reset form to default values? You will still need to click Save.',
+    'zh-CN': '是否恢复表单中的默认设置？需点击保存后才会生效。'
+  },
+  invalidSettings: {
+    en: 'Check the settings values and configured model name.',
+    'zh-CN': '请检查设置值以及模型是否已在 Pi 中配置。'
+  },
+  serverError: {
+    en: 'Unable to save. Check the configuration file permissions.',
+    'zh-CN': '无法保存，请检查配置文件权限。'
+  },
+  conflict: {
+    en: 'Settings changed elsewhere. Your edits are still here; reopen settings and reapply them.',
+    'zh-CN': '设置已在别处修改。此页的编辑仍保留；请重新打开设置并重新应用。'
+  },
+  settingsError: {
+    en: 'Cannot read clear-reply.json. Repair that file before saving; it has not been overwritten.',
+    'zh-CN': '无法读取 clear-reply.json。请修复文件后再保存；原文件未被覆盖。'
+  },
+  networkError: {
+    en: 'Connection lost. Settings service stops after idle timeout; reopen /clear-reply settings from Pi.',
+    'zh-CN': '连接已断开。设置服务在空闲超时后自动退出；请在 Pi 中重新执行 /clear-reply settings。'
+  }
+};
+
+let currentLang = 'en';
+let serverData = null;
+let isSaving = false;
+let retryAction = null;
+let version = '';
+
+const t = (key, fallback = '') => I18N[key]?.[currentLang] ?? fallback;
+
+function setStatus(text, isError = false) {
+  const el = $('status');
+  el.textContent = text;
+  el.className = isError ? 'error' : '';
+}
+
+function updateCharCount() {
+  $('char-count').textContent = String($('field-instructions').value.length);
+}
+
+function updateKeyDisplay() {
+  const ok = !!serverData?.keyAvailable;
+  const badge = $('key-badge');
+  badge.textContent = ok ? '✓' : '!';
+  badge.className = 'key-badge ' + (ok ? 'ok' : 'missing');
+  $('key-status-text').textContent = t(ok ? 'keyConfigured' : 'keyMissing');
+  $('key-help-text').textContent = t('keyHelp');
+}
+
+function updateCurrentModelDisplay() {
+  const name = serverData?.currentModel || t('unknownModel');
+  $('current-model-info').textContent = t('currentModelPrefix') + name;
+}
+
+function updateModels(models) {
+  const dl = $('models-datalist');
+  dl.replaceChildren();
+  if (!Array.isArray(models)) return;
+  for (const m of models) {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = m.label || m.id;
+    dl.appendChild(opt);
+  }
+}
+
+function applyLang() {
+  document.documentElement.lang = currentLang;
+  document.title = t('documentTitle');
+  document.querySelector('nav').setAttribute('aria-label', currentLang === 'zh-CN' ? '界面语言' : 'Interface language');
+
+  const textIds = [
+    'tagline',
+    'labelEnabled', 'descEnabled',
+    'labelLanguage',
+    'labelRewrite', 'descRewrite',
+    'labelVisuals', 'descVisuals',
+    'labelHideDraft', 'descHideDraft',
+    'labelRewriteModel',
+    'labelInstructions',
+    'advancedSummary',
+    'labelRewriteThreshold', 'descRewriteThreshold',
+    'labelVisualThreshold', 'descVisualThreshold',
+    'labelJevModel',
+    'labelReviewTimeoutMs', 'descReviewTimeoutMs',
+    'labelRewriteTimeoutMs', 'descRewriteTimeoutMs',
+    'labelSettingsIdleMinutes', 'descSettingsIdleMinutes',
+    'saveBtn', 'defaultsBtn', 'retryBtn'
+  ];
+  for (const id of textIds) {
+    const el = $(id);
+    if (el) el.textContent = t(id);
+  }
+
+  $('field-rewriteModel').placeholder = t('placeholderRewriteModel');
+  $('field-instructions').placeholder = t('placeholderInstructions');
+  $('privacy-text').textContent = t('privacyText');
+  $('lang-en').setAttribute('aria-pressed', String(currentLang === 'en'));
+  $('lang-zh').setAttribute('aria-pressed', String(currentLang === 'zh-CN'));
+  $('field-language').value = currentLang;
+
+  updateKeyDisplay();
+  updateCurrentModelDisplay();
+}
+
+function switchLang(lang) {
+  if (isSaving) return;
+  currentLang = (lang === 'zh-CN' || lang === 'zh') ? 'zh-CN' : 'en';
+  applyLang();
+}
+
+function populateForm(s) {
+  if (!s) return;
+  $('field-enabled').checked = s.enabled !== false;
+  $('field-language').value = s.language === 'zh-CN' ? 'zh-CN' : 'en';
+  $('field-rewriteModel').value = s.rewriteModel || '';
+  $('field-rewrite').checked = s.rewrite !== false;
+  $('field-visuals').checked = s.visuals !== false;
+  $('field-hideDraft').checked = s.hideDraft !== false;
+  $('field-rewriteThreshold').value = typeof s.rewriteThreshold === 'number' ? s.rewriteThreshold : 0.7;
+  $('field-visualThreshold').value = typeof s.visualThreshold === 'number' ? s.visualThreshold : 0.75;
+  $('field-jevModel').value = s.jevModel || 'jev-latest';
+  $('field-reviewTimeoutMs').value = typeof s.reviewTimeoutMs === 'number' ? s.reviewTimeoutMs : 5000;
+  $('field-rewriteTimeoutMs').value = typeof s.rewriteTimeoutMs === 'number' ? s.rewriteTimeoutMs : 30000;
+  $('field-settingsIdleMinutes').value = typeof s.settingsIdleMinutes === 'number' ? s.settingsIdleMinutes : 5;
+  $('field-instructions').value = s.instructions || '';
+  updateCharCount();
+}
+
+function getFormData() {
+  return {
+    enabled: $('field-enabled').checked,
+    language: $('field-language').value,
+    rewriteModel: $('field-rewriteModel').value.trim(),
+    rewrite: $('field-rewrite').checked,
+    visuals: $('field-visuals').checked,
+    hideDraft: $('field-hideDraft').checked,
+    rewriteThreshold: Number($('field-rewriteThreshold').value),
+    visualThreshold: Number($('field-visualThreshold').value),
+    jevModel: $('field-jevModel').value.trim(),
+    reviewTimeoutMs: parseInt($('field-reviewTimeoutMs').value, 10),
+    rewriteTimeoutMs: parseInt($('field-rewriteTimeoutMs').value, 10),
+    settingsIdleMinutes: parseInt($('field-settingsIdleMinutes').value, 10),
+    instructions: $('field-instructions').value
+  };
+}
+
+async function apiRequest(method, body) {
+  const headers = { 'Authorization': 'Bearer ' + token };
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    headers['If-Match'] = version;
+  }
+  const res = await fetch('/settings', {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) {
+    let msg = '';
+    try { msg = await res.text(); } catch {}
+    const error = new Error(msg || `${res.status} ${res.statusText}`);
+    error.status = res.status;
+    throw error;
+  }
+  version = res.headers.get('ETag') || '';
+  return res.json();
+}
+
+async function loadSettings() {
+  setStatus(t('loading'));
+  $('retryBtn').hidden = true;
+  $('fieldset').disabled = true;
+  try {
+    const data = await apiRequest('GET');
+    serverData = data;
+    if (data.settings?.language) {
+      currentLang = data.settings.language === 'zh-CN' ? 'zh-CN' : 'en';
+        }
+    applyLang();
+    populateForm(data.settings);
+    updateModels(data.models);
+    $('fieldset').disabled = !!data.settingsError;
+    setStatus(t(data.settingsError ? 'settingsError' : 'ready'), !!data.settingsError);
+  } catch (err) {
+    setStatus(t('networkError'), true);
+    $('retryBtn').hidden = false;
+    retryAction = loadSettings;
+  }
+}
+
+async function saveSettings(e) {
+  if (e) e.preventDefault();
+  const form = $('settings-form');
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+  if (isSaving) return;
+  isSaving = true;
+  $('fieldset').disabled = true;
+  $('retryBtn').hidden = true;
+  setStatus(t('saving'));
+
+  const payload = getFormData();
+  try {
+    const res = await apiRequest('PUT', payload);
+    if (res?.settings) {
+      serverData.settings = res.settings;
+    }
+    if (payload.language && payload.language !== currentLang) {
+      switchLang(payload.language);
+    }
+    setStatus(t('saved'));
+  } catch (err) {
+    // Unsaved values retained in form DOM
+    setStatus(err.status === 409 ? t('conflict') : t('saveFailed') + (err.status === 400 ? t('invalidSettings') : err.status ? t('serverError') : t('networkError')), true);
+    $('retryBtn').hidden = err.status === 409;
+    retryAction = () => saveSettings();
+  } finally {
+    isSaving = false;
+    $('fieldset').disabled = false;
+  }
+}
+
+// Event Listeners
+$('lang-en').addEventListener('click', () => switchLang('en'));
+$('lang-zh').addEventListener('click', () => switchLang('zh-CN'));
+$('field-language').addEventListener('change', () => switchLang($('field-language').value));
+$('field-instructions').addEventListener('input', updateCharCount);
+$('settings-form').addEventListener('submit', saveSettings);
+
+$('defaultsBtn').addEventListener('click', () => {
+  if (!serverData?.defaults) return;
+  if (!confirm(t('confirmReset'))) return;
+  populateForm(serverData.defaults);
+  if (serverData.defaults.language && serverData.defaults.language !== currentLang) {
+    switchLang(serverData.defaults.language);
+  }
+  setStatus(t('defaultsRestored'));
+});
+
+$('retryBtn').addEventListener('click', () => {
+  if (typeof retryAction === 'function') retryAction();
+});
+
+// Initial boot
+applyLang();
+loadSettings();
+
+</script>
+</body>
+</html>

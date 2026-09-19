@@ -1,0 +1,56 @@
+{
+  "name": "@each1024/pi-jev-reply",
+  "version": "0.1.1",
+  "description": "Clearer Pi replies with Jev review, optional rewrite/visuals, and on-demand bilingual settings.",
+  "type": "module",
+  "license": "MIT",
+  "author": "eachann1024",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "pi-coding-agent",
+    "jev",
+    "reply"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions/clear-reply.ts"
+    ]
+  },
+  "files": [
+    "extensions",
+    "lib",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE",
+    "assets"
+  ],
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node test/check.mjs"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=0.85.1",
+    "@earendil-works/pi-ai": ">=0.85.1"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.85.1",
+    "@earendil-works/pi-ai": "0.85.1",
+    "@types/node": "^26.4.1",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eachann1024/pi-jev-reply.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eachann1024/pi-jev-reply/issues"
+  },
+  "homepage": "https://github.com/eachann1024/pi-jev-reply#readme"
+}

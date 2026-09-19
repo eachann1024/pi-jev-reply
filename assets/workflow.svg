@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Two-stage reply clarity workflow</title><desc id="desc">Inspect, then improve when needed.</desc>
+  <rect width="1200" height="720" rx="36" fill="#101315"/>
+  <g fill="none" stroke="#33404a" stroke-width="2"><path d="M112 104h976M112 616h976"/><path d="M250 360h700" stroke="#3d76c7" stroke-width="3" stroke-dasharray="8 14"/></g>
+  <g font-family="ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+    <text x="80" y="84" fill="#dfe6e9" font-size="26" font-weight="600" letter-spacing="2">REPLY CLARITY FLOW</text>
+    <text x="80" y="658" fill="#8d9aa2" font-size="20">Polish only when wording is unclear—then ship the edit.</text>
+    <g transform="translate(170 180)">
+      <rect width="340" height="360" rx="24" fill="#f5f0e6"/>
+      <rect x="28" y="30" width="92" height="38" rx="19" fill="#111719"/><text x="46" y="56" fill="#d9ff56" font-size="18" font-weight="700">01</text>
+      <text x="28" y="120" fill="#161b1d" font-size="34" font-weight="700">Inspect</text>
+      <text x="28" y="154" fill="#5b6263" font-size="20">Jev checks for jargon,</text><text x="28" y="181" fill="#5b6263" font-size="20">gaps, and vague claims.</text>
+      <rect x="28" y="228" width="244" height="18" rx="9" fill="#cfd5d0"/><rect x="28" y="262" width="186" height="18" rx="9" fill="#cfd5d0"/><rect x="28" y="296" width="220" height="18" rx="9" fill="#cfd5d0"/>
+      <circle cx="270" cy="99" r="27" fill="#d9ff56"/><path d="m258 100 8 8 17-20" fill="none" stroke="#17211d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(690 180)">
+      <rect width="340" height="360" rx="24" fill="#eaf1fb"/>
+      <rect x="28" y="30" width="92" height="38" rx="19" fill="#16233b"/><text x="46" y="56" fill="#a7ccff" font-size="18" font-weight="700">02</text>
+      <text x="28" y="120" fill="#161b1d" font-size="34" font-weight="700">Improve</text>
+      <text x="28" y="154" fill="#52677d" font-size="20">Rewrite with your model</text><text x="28" y="181" fill="#52677d" font-size="20">and show it—no recheck.</text>
+      <rect x="28" y="228" width="206" height="18" rx="9" fill="#b9cee8"/><rect x="28" y="262" width="244" height="18" rx="9" fill="#b9cee8"/><rect x="28" y="296" width="172" height="18" rx="9" fill="#b9cee8"/>
+      <path d="M255 72h35v35h-35z" fill="#3d76c7"/><path d="m263 96 9 9 17-20" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+  <g fill="#3d76c7"><path d="m560 351 21-14v28z"/></g>
+</svg>
