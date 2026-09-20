@@ -3,6 +3,11 @@ import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 
+export const DEFAULT_INSTRUCTIONS: { en: string; "zh-CN": string } = {
+  en: "英文润色。Rewrite in concrete, plain English so what changed, the outcome, and the limits are obvious. Drop unnecessary jargon instead of only expanding abbreviations. Keep every fact, number, path, command, and code identifier; do not invent or add recommendations. Stay concise.",
+  "zh-CN": "中文润色。用具体、直白的中文写清改了什么、结果和限制；去掉不必要的黑话，不要只展开缩写。保留全部事实、数字、路径、命令和代码标识；不编造、不加建议；保持简洁。",
+};
+
 export const DEFAULTS = {
   enabled: true,
   language: "en" as "en" | "zh-CN",
@@ -16,10 +21,32 @@ export const DEFAULTS = {
   reviewTimeoutMs: 5000,
   rewriteTimeoutMs: 30000,
   settingsIdleMinutes: 5,
-  instructions: "",
+  instructions: DEFAULT_INSTRUCTIONS.en,
 };
 export type Settings = typeof DEFAULTS;
 export type Language = Settings["language"];
+
+export function defaultInstructions(language: Language): string {
+  return DEFAULT_INSTRUCTIONS[language];
+}
+
+export function effectiveInstructions(settings: Settings): string {
+  return settings.instructions.trim() || defaultInstructions(settings.language);
+}
+
+export function retargetInstructions(text: string, language: Language): string {
+  const next = defaultInstructions(language);
+  const trimmed = text.trim();
+  if (!trimmed || trimmed === DEFAULT_INSTRUCTIONS.en || trimmed === DEFAULT_INSTRUCTIONS["zh-CN"]) return next;
+  for (const prefix of ["中文润色", "英文润色"] as const) {
+    if (trimmed === prefix || trimmed.startsWith(prefix)) {
+      const rest = trimmed.slice(prefix.length).replace(/^[。.\s]+/, "");
+      const nextPrefix = language === "zh-CN" ? "中文润色" : "英文润色";
+      return rest ? `${nextPrefix}。${rest}` : next;
+    }
+  }
+  return text;
+}
 
 /** Detect settings UI language from locale env vars (does not affect reply language). */
 export function detectLanguage(env: NodeJS.ProcessEnv = process.env): Language {
@@ -39,7 +66,8 @@ export function detectLanguage(env: NodeJS.ProcessEnv = process.env): Language {
 }
 
 export function defaultsForLocale(env: NodeJS.ProcessEnv = process.env): Settings {
-  return { ...DEFAULTS, language: detectLanguage(env) };
+  const language = detectLanguage(env);
+  return { ...DEFAULTS, language, instructions: defaultInstructions(language) };
 }
 
 export function parseSettings(input: unknown): Settings {
@@ -95,9 +123,8 @@ export async function saveSettings(path: string, settings: Settings): Promise<vo
   } finally { await rm(temporary, { force: true }).catch(() => {}); }
 }
 
-export async function readJevKey(): Promise<string> {
-  const fromEnvironment = process.env.TYPESAFE_API_KEY?.trim();
-  if (fromEnvironment) return fromEnvironment;
+export async function readJevKey(env: NodeJS.ProcessEnv = process.env): Promise<string> {
+  if (Object.hasOwn(env, "TYPESAFE_API_KEY")) return env.TYPESAFE_API_KEY?.trim() ?? "";
   try { return (await readFile(join(homedir(), ".config/typesafe/api_key"), "utf8")).trim(); }
   catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return "";

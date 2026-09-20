@@ -287,7 +287,7 @@
     <p id="privacy-text"></p>
   </section>
 
-  <details class="card">
+  <details class="card" open>
     <summary id="settingsSummary"></summary>
   <form id="settings-form">
     <fieldset id="fieldset" disabled>
@@ -345,7 +345,7 @@
           <p class="field-hint" style="display:flex;justify-content:flex-end;"><span><span id="char-count">0</span> / 2000</span></p>
         </div>
 
-        <details id="advanced-details">
+        <details id="advanced-details" open>
           <summary id="advancedSummary"></summary>
           <div class="details-body">
             <div class="field">
@@ -426,12 +426,12 @@ const I18N = {
     'zh-CN': 'Typesafe API 密钥：未配置'
   },
   keyHelp: {
-    en: 'To configure, set the TYPESAFE_API_KEY environment variable or write to ~/.config/typesafe/api_key.',
-    'zh-CN': '如需配置，请设置 TYPESAFE_API_KEY 环境变量或写入 ~/.config/typesafe/api_key。'
+    en: 'Optional. Without a key the plugin still runs, using the current model or another available model named other. To use Jev, set TYPESAFE_API_KEY or write ~/.config/typesafe/api_key.',
+    'zh-CN': '可选。未配置时插件仍可用，走当前主模型，没有主模型则用 other。要用 Jev，请设置 TYPESAFE_API_KEY 或写入 ~/.config/typesafe/api_key。'
   },
   privacyText: {
-    en: 'Privacy note: Jev receives reply drafts to evaluate clarity and structure. Optional rewrite uses the selected model only when triggered.',
-    'zh-CN': '隐私说明：Jev 审核服务接收回复草稿以评估清晰度与结构。可选改写仅在触发时使用所选模型。'
+    en: 'Privacy note: If a Jev key is configured, Jev receives reply drafts to evaluate clarity and structure. Without a key, the current model or other handles the pass. Optional rewrite uses the selected model only when triggered.',
+    'zh-CN': '隐私说明：配置了 Jev 密钥时，审核服务会接收回复草稿以评估清晰度与结构。未配置则由当前主模型或 other 处理。可选改写仅在触发时使用所选模型。'
   },
   labelEnabled: {
     en: 'Enable pi-jev-reply',
@@ -493,13 +493,17 @@ const I18N = {
     en: 'Additional instructions for tone, style, or specific formatting rules…',
     'zh-CN': '针对语气、风格或特定排版格式的补充指令…'
   },
+  defaultInstructions: {
+    en: '英文润色。Rewrite in concrete, plain English so what changed, the outcome, and the limits are obvious. Drop unnecessary jargon instead of only expanding abbreviations. Keep every fact, number, path, command, and code identifier; do not invent or add recommendations. Stay concise.',
+    'zh-CN': '中文润色。用具体、直白的中文写清改了什么、结果和限制；去掉不必要的黑话，不要只展开缩写。保留全部事实、数字、路径、命令和代码标识；不编造、不加建议；保持简洁。'
+  },
   advancedSummary: {
     en: 'Advanced Options',
     'zh-CN': '高级选项'
   },
   settingsSummary: {
-    en: 'Settings (collapsed by default; plugin stays on)',
-    'zh-CN': '设置（默认收起，插件默认开启）'
+    en: 'Settings (expanded by default; plugin stays on)',
+    'zh-CN': '设置（默认展开，插件默认开启）'
   },
   labelRewriteThreshold: {
     en: 'Rewrite Threshold (0..1)',
@@ -691,10 +695,35 @@ function applyLang() {
   updateCurrentModelDisplay();
 }
 
+function presetInstructions(lang) {
+  return I18N.defaultInstructions[lang === 'zh-CN' ? 'zh-CN' : 'en'];
+}
+
+function isPresetInstructions(text) {
+  const value = (text || '').trim();
+  return !value || value === I18N.defaultInstructions.en || value === I18N.defaultInstructions['zh-CN'];
+}
+
+function retargetInstructionLanguage(text, lang) {
+  const next = presetInstructions(lang);
+  if (isPresetInstructions(text)) return next;
+  const trimmed = text.trim();
+  for (const prefix of ['中文润色', '英文润色']) {
+    if (trimmed === prefix || trimmed.startsWith(prefix)) {
+      const rest = trimmed.slice(prefix.length).replace(/^[。.\s]+/, '');
+      const nextPrefix = lang === 'zh-CN' ? '中文润色' : '英文润色';
+      return rest ? nextPrefix + '。' + rest : next;
+    }
+  }
+  return text;
+}
+
 function switchLang(lang) {
   if (isSaving) return;
   currentLang = (lang === 'zh-CN' || lang === 'zh') ? 'zh-CN' : 'en';
   applyLang();
+  $('field-instructions').value = retargetInstructionLanguage($('field-instructions').value, currentLang);
+  updateCharCount();
 }
 
 function populateForm(s) {
@@ -711,7 +740,7 @@ function populateForm(s) {
   $('field-reviewTimeoutMs').value = typeof s.reviewTimeoutMs === 'number' ? s.reviewTimeoutMs : 5000;
   $('field-rewriteTimeoutMs').value = typeof s.rewriteTimeoutMs === 'number' ? s.rewriteTimeoutMs : 30000;
   $('field-settingsIdleMinutes').value = typeof s.settingsIdleMinutes === 'number' ? s.settingsIdleMinutes : 5;
-  $('field-instructions').value = s.instructions || '';
+  $('field-instructions').value = s.instructions?.trim() ? s.instructions : presetInstructions(s.language === 'zh-CN' ? 'zh-CN' : 'en');
   updateCharCount();
 }
 
@@ -821,10 +850,7 @@ $('settings-form').addEventListener('submit', saveSettings);
 $('defaultsBtn').addEventListener('click', () => {
   if (!serverData?.defaults) return;
   if (!confirm(t('confirmReset'))) return;
-  populateForm(serverData.defaults);
-  if (serverData.defaults.language && serverData.defaults.language !== currentLang) {
-    switchLang(serverData.defaults.language);
-  }
+  populateForm({ ...serverData.defaults, language: currentLang, instructions: presetInstructions(currentLang) });
   setStatus(t('defaultsRestored'));
 });
 
@@ -834,6 +860,8 @@ $('retryBtn').addEventListener('click', () => {
 
 // Initial boot
 applyLang();
+$('field-instructions').value = retargetInstructionLanguage($('field-instructions').value, currentLang);
+updateCharCount();
 loadSettings();
 
 </script>

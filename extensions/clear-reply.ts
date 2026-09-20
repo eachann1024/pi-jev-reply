@@ -1,8 +1,8 @@
 import { join } from "node:path";
 import { getAgentDir, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
-import { DEFAULTS, loadOrCreateSettings, parseSettings, readJevKey, saveSettings, type Settings } from "../lib/settings.ts";
-import { editorPrompt, eligibleDraft, judge, parseEdited, textContent } from "../lib/review.ts";
+import { DEFAULTS, effectiveInstructions, loadOrCreateSettings, parseSettings, readJevKey, saveSettings, type Settings } from "../lib/settings.ts";
+import { editorPrompt, eligibleDraft, judge, localDecision, parseEdited, textContent } from "../lib/review.ts";
 
 type SettingsWeb = Awaited<ReturnType<typeof import("../lib/settings-web.ts").startSettingsWeb>>;
 const PLUGIN = "pi-jev-reply";
@@ -52,7 +52,17 @@ export default function clearReply(pi: ExtensionAPI) {
   let warned = false;
   let configError = false;
   const copy = (en: string, zh: string) => settings.language === "zh-CN" ? zh : en;
-  const active = () => settings.enabled && !configError && Boolean(key) && (settings.rewrite || settings.visuals);
+  const active = () => settings.enabled && !configError && (settings.rewrite || settings.visuals);
+  const lookupModel = (ctx: ExtensionContext, value: string) => {
+    if (!value) return undefined;
+    const slash = value.indexOf("/");
+    return slash >= 0 ? ctx.modelRegistry.find(value.slice(0, slash), value.slice(slash + 1)) : undefined;
+  };
+  const fallbackModel = (ctx: ExtensionContext) => {
+    if (ctx.model) return ctx.model;
+    const available = ctx.modelRegistry.getAvailable?.() ?? [];
+    return available.find(model => model.id === "other") ?? available[0];
+  };
   const closeSettings = () => {
     web?.close();
     web = undefined;
@@ -66,11 +76,7 @@ export default function clearReply(pi: ExtensionAPI) {
     closeSettings();
     warned = false;
   };
-  const chooseModel = (ctx: ExtensionContext, value: string) => {
-    if (!value) return ctx.model;
-    const slash = value.indexOf("/");
-    return ctx.modelRegistry.find(value.slice(0, slash), value.slice(slash + 1));
-  };
+  const chooseModel = (ctx: ExtensionContext, value: string) => lookupModel(ctx, value) ?? fallbackModel(ctx);
 
   pi.registerMarkdownTransformer((markdown, info) => {
     // ponytail: native Pi TUI only; custom transcript renderers and RPC consumers must buffer their own stream.
@@ -113,14 +119,16 @@ export default function clearReply(pi: ExtensionAPI) {
     const draft = textContent(message.content);
     const userEntry = [...ctx.sessionManager.getBranch()].reverse().find(entry => entry.type === "message" && entry.message.role === "user");
     const request = userEntry?.type === "message" && userEntry.message.role === "user" ? textContent(userEntry.message.content).slice(0, 2000) : "";
-    if (!eligibleDraft(draft, `${request}\n${settings.instructions}`)) return;
+    if (!eligibleDraft(draft, `${request}\n${effectiveInstructions(settings)}`)) return;
     const revision = settings;
     const current = { ...revision };
     const operation = lifetime;
     const signal = AbortSignal.any([operation.signal, ...(ctx.signal ? [ctx.signal] : [])]);
     status(ctx, PLUGIN);
     try {
-      const decision = await limited(current.reviewTimeoutMs, signal, child => judge(draft, request, current, key, child));
+      const decision = key
+        ? await limited(current.reviewTimeoutMs, signal, child => judge(draft, request, current, key, child))
+        : localDecision(current, request);
       if (!decision.rewrite && decision.visual === "none") return;
       const model = chooseModel(ctx, current.rewriteModel);
       if (!model) throw new Error("Rewrite model is not available");
@@ -165,7 +173,7 @@ export default function clearReply(pi: ExtensionAPI) {
           }, async value => {
             if (configError) throw new TypeError("Repair clear-reply.json before saving");
             const next = parseSettings(value);
-            if (next.rewriteModel && !chooseModel(context ?? ctx, next.rewriteModel)) throw new TypeError("Unknown rewrite model");
+            if (next.rewriteModel && !lookupModel(context ?? ctx, next.rewriteModel)) throw new TypeError("Unknown rewrite model");
             await saveSettings(settingsPath(), next);
             settings = next;
             configError = false;
@@ -197,8 +205,8 @@ export default function clearReply(pi: ExtensionAPI) {
       if (!action || action === "settings") { await openSettings(ctx); return; }
       if (action === "status") {
         ctx.ui.notify(copy(
-          `pi-jev-reply: ${active() ? "enabled" : "inactive"}; Jev key ${key ? "configured" : "missing"}; model ${settings.rewriteModel || "current main model"}.`,
-          `pi-jev-reply：${active() ? "已启用" : "未启用"}；Jev 密钥${key ? "已配置" : "缺失"}；模型：${settings.rewriteModel || "当前主模型"}。`,
+          `pi-jev-reply: ${active() ? "enabled" : "inactive"}; Jev key ${key ? "configured" : "missing, using current model or other"}; model ${settings.rewriteModel || "current main model"}.`,
+          `pi-jev-reply：${active() ? "已启用" : "未启用"}；Jev 密钥${key ? "已配置" : "未配置，走当前主模型或 other"}；模型：${settings.rewriteModel || "当前主模型"}。`,
         ), "info");
         return;
       }
