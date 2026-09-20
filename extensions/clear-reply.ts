@@ -1,10 +1,15 @@
 import { join } from "node:path";
 import { getAgentDir, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { Text } from "@earendil-works/pi-tui";
 import { DEFAULTS, loadOrCreateSettings, parseSettings, readJevKey, saveSettings, type Settings } from "../lib/settings.ts";
 import { editorPrompt, eligibleDraft, judge, parseEdited, textContent } from "../lib/review.ts";
 
 type SettingsWeb = Awaited<ReturnType<typeof import("../lib/settings-web.ts").startSettingsWeb>>;
-
+const PLUGIN = "pi-jev-reply";
+type Badge = { text: string };
+function status(ctx: ExtensionContext, text?: string) {
+  try { ctx.ui.setStatus(PLUGIN, text); } catch { /* 页脚状态是提示，不是门禁 */ }
+}
 async function limited<T>(milliseconds: number, signal: AbortSignal, run: (signal: AbortSignal) => Promise<T>): Promise<T> {
   const timeout = new AbortController();
   const combined = AbortSignal.any([signal, timeout.signal]);
@@ -28,6 +33,15 @@ async function limited<T>(milliseconds: number, signal: AbortSignal, run: (signa
 }
 
 export default function clearReply(pi: ExtensionAPI) {
+  pi.registerEntryRenderer<Badge>(PLUGIN, (entry, _, theme) => {
+    const detail = entry.data?.text ? ` ${entry.data.text}` : "";
+    return new Text(theme.fg("accent", PLUGIN) + theme.fg("dim", detail), 0, 0);
+  });
+  pi.registerEntryRenderer("clear-reply", (entry, _, theme) => {
+    const data = entry.data as { text?: string; rewrite?: boolean; visual?: string; model?: string } | undefined;
+    const text = data?.text || [data?.rewrite ? "rewrite" : "", data?.visual && data.visual !== "none" ? data.visual : "", data?.model].filter(Boolean).join(" · ");
+    return new Text(theme.fg("accent", PLUGIN) + theme.fg("dim", text ? ` ${text}` : ""), 0, 0);
+  });
   const settingsPath = () => join(getAgentDir(), "clear-reply.json");
   let settings: Settings = { ...DEFAULTS };
   let key = "";
@@ -80,10 +94,9 @@ export default function clearReply(pi: ExtensionAPI) {
     catch { key = ""; ctx.ui.notify("pi-jev-reply: Jev credentials could not be read. You can still open settings.", "warning"); }
     if (firstRun && ctx.mode === "tui") {
       ctx.ui.notify(copy(
-        "pi-jev-reply installed. Opening settings so you can finish setup (Jev key, rewrite, visuals).",
-        "已安装 pi-jev-reply，正在打开设置页完成初始化（Jev 密钥、改写与可视化）。",
+        "pi-jev-reply is on. The session shows a pi-jev-reply mark when it reviews a reply. Open /pi-jev-reply only if you need settings.",
+        "pi-jev-reply 已默认开启。检查回复时会话会显示 pi-jev-reply 标识；需要改选项时再执行 /pi-jev-reply。",
       ), "info");
-      await openSettings(ctx);
     }
   });
   pi.on("session_before_switch", () => { reset(); });
@@ -105,6 +118,7 @@ export default function clearReply(pi: ExtensionAPI) {
     const current = { ...revision };
     const operation = lifetime;
     const signal = AbortSignal.any([operation.signal, ...(ctx.signal ? [ctx.signal] : [])]);
+    status(ctx, PLUGIN);
     try {
       const decision = await limited(current.reviewTimeoutMs, signal, child => judge(draft, request, current, key, child));
       if (!decision.rewrite && decision.visual === "none") return;
@@ -119,7 +133,7 @@ export default function clearReply(pi: ExtensionAPI) {
       const edited = parseEdited(textContent(result.content), draft, decision);
       if (operation !== lifetime || settings !== revision || !settings.enabled || ctx.hasPendingMessages()) return;
       // No drafts, credentials or model reasoning in diagnostics.
-      pi.appendEntry("clear-reply", { rewrite: decision.rewrite, visual: decision.visual, model: `${model.provider}/${model.id}`, usage: result.usage });
+      pi.appendEntry(PLUGIN, { text: [decision.rewrite ? "rewrite" : "", decision.visual !== "none" ? decision.visual : "", `${model.provider}/${model.id}`].filter(Boolean).join(" · ") });
       return { message: { ...message, content: [
         ...message.content.filter(part => part.type !== "text"),
         { type: "text" as const, text: edited },
@@ -129,7 +143,7 @@ export default function clearReply(pi: ExtensionAPI) {
         warned = true;
         ctx.ui.notify(copy("pi-jev-reply could not finish checking this reply. The original was kept.", "pi-jev-reply 未完成检查，已保留原回复。"), "warning");
       }
-    }
+    } finally { status(ctx); }
   });
 
   async function openSettings(ctx: ExtensionContext) {

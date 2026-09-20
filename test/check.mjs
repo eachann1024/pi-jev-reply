@@ -80,8 +80,8 @@ try {
   };
   extension({
     on: (name, fn) => hooks.set(name, fn), registerCommand: (name, command) => commands.set(name, command),
-    registerMarkdownTransformer: fn => { transformer = fn; }, appendEntry: (...entry) => entries.push(entry),
-    exec: async () => ({ code: 0 }),
+    registerMarkdownTransformer: fn => { transformer = fn; }, registerEntryRenderer: () => {}, appendEntry: (...entry) => entries.push(entry),
+    exec: async () => { throw new Error('settings must stay closed on first run'); },
   });
   globalThis.fetch = async (_, options) => {
     calls++;
@@ -101,6 +101,7 @@ try {
   assert.deepEqual(result.message.usage, message.usage);
   assert.equal(message.content[0].text, draft, 'original event not mutated by the handler');
   assert.equal(entries.length, 1);
+  assert.equal(entries[0][0], 'pi-jev-reply');
   await saveSettings(config, { ...DEFAULTS, rewriteModel: 'test/other' });
   await hooks.get('session_start')({}, ctx);
   await hooks.get('message_end')({ message }, ctx);
@@ -124,7 +125,7 @@ try {
   const created = JSON.parse(await readFile(join(freshDir, 'clear-reply.json'), 'utf8'));
   assert.equal(created.language, 'zh-CN');
   assert.equal(onboard.length, 1);
-  assert.match(onboard[0], /初始化|Opening settings|\/pi-jev-reply/);
+  assert.match(onboard[0], /默认开启|is on/);
   assert.ok(commands.has('pi-jev-reply'));
   await rm(freshDir, { recursive: true, force: true });
   process.env.PI_CODING_AGENT_DIR = temp;

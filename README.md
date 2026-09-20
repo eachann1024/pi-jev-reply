@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.0/assets/hero.png" alt="A reply passing through a clarity gate" width="100%" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.1/assets/hero.png" alt="A reply passing through a clarity gate" width="100%" />
 </p>
 
 <h1 align="center">Pi Jev Reply</h1>
@@ -21,14 +21,14 @@
 npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-reply
 ```
 
-Run `/reload`. On first session the extension opens settings so you can finish setup. Later, `/pi-jev-reply` opens the same page (`/clear-reply` still works). Requires Pi `>= 0.85.1`, Node `>= 22.18.0`, and a Jev API key.
+Run `/reload`. The plugin is on by default. The session shows a `pi-jev-reply` mark when it reviews a reply. Open `/pi-jev-reply` only if you need settings (`/clear-reply` still works). Requires Pi `>= 0.85.1`, Node `>= 22.18.0`, and a Jev API key.
 
-On first install the extension creates `clear-reply.json` with a settings UI language guessed from your locale (`zh*` → `zh-CN`, otherwise `en`) and opens the settings page once. Existing config files are never rewritten for language.
+On first install the extension creates `clear-reply.json` with a settings UI language guessed from your locale (`zh*` → `zh-CN`, otherwise `en`). It does not open the settings page. Existing config files are never rewritten for language.
 
 ## Workflow
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.0/assets/workflow.svg" alt="Two-stage reply clarity workflow" width="760" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.1/assets/workflow.svg" alt="Two-stage reply clarity workflow" width="760" />
 </p>
 
 | Stage | Owner | Result |
@@ -61,7 +61,7 @@ Settings apply immediately—no restart or `/reload` is needed after saving.
 ## Settings without background noise
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.0/assets/settings.png" alt="On-demand local settings service" width="720" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.1/assets/settings.png" alt="On-demand local settings service" width="720" />
 </p>
 
 The bilingual (`en` / `zh-CN`) HTML settings page is served only on demand:

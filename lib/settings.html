@@ -247,6 +247,10 @@
     [hidden] {
       display: none !important;
     }
+    summary {
+      cursor: pointer;
+      min-height: 24px;
+    }
     @media (max-width: 450px) {
       h1 { font-size: 1.85rem; }
       main { padding: 24px 14px 48px; }
@@ -283,6 +287,8 @@
     <p id="privacy-text"></p>
   </section>
 
+  <details class="card">
+    <summary id="settingsSummary"></summary>
   <form id="settings-form">
     <fieldset id="fieldset" disabled>
       <div class="stack">
@@ -386,6 +392,7 @@
       </div>
     </fieldset>
   </form>
+  </details>
 </main>
 
 <script>
@@ -489,6 +496,10 @@ const I18N = {
   advancedSummary: {
     en: 'Advanced Options',
     'zh-CN': '高级选项'
+  },
+  settingsSummary: {
+    en: 'Settings (collapsed by default; plugin stays on)',
+    'zh-CN': '设置（默认收起，插件默认开启）'
   },
   labelRewriteThreshold: {
     en: 'Rewrite Threshold (0..1)',
@@ -647,6 +658,7 @@ function applyLang() {
 
   const textIds = [
     'mainTitle', 'tagline',
+    'settingsSummary',
     'labelEnabled', 'descEnabled',
     'labelLanguage',
     'labelRewrite', 'descRewrite',
