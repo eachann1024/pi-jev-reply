@@ -1,6 +1,8 @@
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/hero.png" alt="回复穿过清晰之门" width="100%" />
+  <img src="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/assets/hero.png" alt="直白改写的前后对比示例" width="100%" />
 </p>
+
+*改写示例：用直白措辞替换黑话；失败或无效编辑保留原文。*
 
 # Pi Jev Reply
 
@@ -26,10 +28,6 @@ pi install npm:@each1024/pi-jev-reply
 
 ## 从草稿到清晰回复
 
-<p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/workflow.svg" alt="Jev 检查，所选模型编辑" width="760" />
-</p>
-
 | 检查 | 润色 | 展示 |
 | --- | --- | --- |
 | 有密钥时，由 Jev 判断是否需要编辑。 | 当前或指定模型改写措辞，可添加小表格、流程图或文字图表。 | 展示新回复；失败或无效编辑保留原文。 |
@@ -39,8 +37,10 @@ pi install npm:@each1024/pi-jev-reply
 ## 按你的习惯设置
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/settings.png" alt="按需开启的本地设置" width="720" />
+  <img src="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/assets/settings.png" alt="编辑模型与回复偏好功能示意" width="720" />
 </p>
+
+*功能示意：默认使用当前 Pi 模型，也可另选模型，并调整改写、图表和自定义指令。不是界面截图。*
 
 ```text
 /pi-jev-reply             打开设置

@@ -1,6 +1,8 @@
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/hero.png" alt="A reply passing through a clarity gate" width="100%" />
+  <img src="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/assets/hero.png" alt="Illustrative before-and-after plain-language rewrite" width="100%" />
 </p>
+
+*Illustrative rewrite: replace jargon with plain language. Failed or invalid edits keep the original.*
 
 # Pi Jev Reply
 
@@ -26,10 +28,6 @@ Requires Pi ≥ 0.85.1 and Node ≥ 22.18.0. Interactive TUI only; RPC and print
 
 ## From draft to clear reply
 
-<p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/workflow.svg" alt="Jev reviews the draft; your selected model edits it when needed" width="760" />
-</p>
-
 | Review | Refine | Return |
 | --- | --- | --- |
 | With a key, Jev decides whether an edit helps. | Your current or selected model clarifies wording and can add a small table, diagram, or text chart. | The revised reply appears. Failed or invalid edits leave the original intact. |
@@ -39,8 +37,10 @@ Without a Jev key, enabled rewrites go directly to your model. There is no secon
 ## Make it yours
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/settings.png" alt="Local, on-demand settings" width="720" />
+  <img src="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/assets/settings.png" alt="Editing model and reply preferences — feature overview" width="720" />
 </p>
+
+*Feature overview, not a UI screenshot: use the current Pi model or choose another, then adjust rewrites, visuals, and instructions.*
 
 ```text
 /pi-jev-reply             Open settings
