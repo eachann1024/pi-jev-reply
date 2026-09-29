@@ -115,7 +115,7 @@ try {
   assert.equal(transformer('final', { messageType: 'assistant', isStreaming: false }), 'final');
   const message = { role: 'assistant', stopReason: 'stop', content: [{ type: 'text', text: draft }], usage: { output: 12 } };
   const result = await hooks.get('message_end')({ message }, ctx);
-  assert.equal(result.message.content[0].text, text);
+  assert.equal(result.message.content[0].text, `${text}\n\n✦ pi-jev-reply gave this a little magic polish~`);
   assert.equal(chosen, main, 'current model is the default');
   assert.equal(calls, 1, 'one review only');
   assert.equal(completionCount, 1);
@@ -180,10 +180,10 @@ try {
   globalThis.fetch = async () => { throw new Error('jev must be skipped without a key'); };
   chosen = undefined;
   const noJev = await hooks.get('message_end')({ message }, ctx);
-  assert.equal(noJev.message.content[0].text, text);
+  assert.equal(noJev.message.content[0].text, `${text}\n\n✦ pi-jev-reply gave this a little magic polish~`);
   assert.equal(chosen, main, 'without Jev, use the current model');
   const noMain = await hooks.get('message_end')({ message }, { ...ctx, model: undefined });
-  assert.equal(noMain.message.content[0].text, text);
+  assert.equal(noMain.message.content[0].text, `${text}\n\n✦ pi-jev-reply gave this a little magic polish~`);
   assert.equal(chosen, custom, 'without a current model, use other');
   process.env.TYPESAFE_API_KEY = 'test-only-key';
 

@@ -133,7 +133,7 @@ export default function clearReply(pi: ExtensionAPI) {
       }, { signal: child, maxTokens: Math.min(model.maxTokens, 8192) }));
       signal.throwIfAborted();
       if (result.stopReason !== "stop" || result.content.some(part => part.type === "toolCall")) throw new Error("Incomplete editor response");
-      const edited = parseEdited(textContent(result.content), draft, decision);
+      const edited = `${parseEdited(textContent(result.content), draft, decision)}${polishNote(settings.language)}`;
       if (operation !== lifetime || settings !== revision || !settings.enabled || ctx.hasPendingMessages()) return;
       // No drafts, credentials or model reasoning in diagnostics.
       const record = settings.language === "zh-CN"
@@ -250,4 +250,10 @@ function visualLabel(visual: string) {
 
 function modelLabel(model: { provider: string; id: string; name?: string }) {
   return model.name || `${model.provider}/${model.id}`;
+}
+
+function polishNote(language: Settings["language"]) {
+  return language === "zh-CN"
+    ? "\n\n✦ 已经过 pi-jev-reply 魔法优化输出~"
+    : "\n\n✦ pi-jev-reply gave this a little magic polish~";
 }
