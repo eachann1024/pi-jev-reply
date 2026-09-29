@@ -22,7 +22,7 @@ Run `/reload` in Pi. On the **first interactive launch**, an English welcome pag
 
 - **English by default.** Chinese is available in settings. Existing language preferences are preserved.
 - **Your model, by default.** No Jev key? The extension uses your current Pi model directly.
-- **Quiet after setup.** The guide opens once. Reopen it with `/pi-jev-reply welcome`.
+- **Quiet after setup.** The guide opens once. Reopen it with `/pi-jev-reply-setting welcome`.
 
 Requires Pi ≥ 0.85.1 and Node ≥ 22.18.0. Interactive TUI only; RPC and print modes never open a browser.
 
@@ -43,10 +43,10 @@ Without a Jev key, enabled rewrites go directly to your model. There is no secon
 *Feature overview, not a UI screenshot: use the current Pi model or choose another, then adjust rewrites, visuals, and instructions.*
 
 ```text
-/pi-jev-reply             Open settings
-/pi-jev-reply welcome     Reopen the welcome guide
-/pi-jev-reply on | off    Enable or disable
-/pi-jev-reply status      Check model and Jev-key status
+/pi-jev-reply-setting             Open settings
+/pi-jev-reply-setting welcome     Reopen the welcome guide
+/pi-jev-reply-setting on | off    Enable or disable
+/pi-jev-reply-setting status      Check model and Jev-key status
 ```
 
 Choose a model, control rewrites and visuals, and customize instructions. The local settings service starts for onboarding or on request, then closes after five idle minutes by default. `/clear-reply` remains an alias.

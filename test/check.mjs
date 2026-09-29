@@ -31,13 +31,13 @@ try {
   assert.equal(first.settings.language, 'en');
   assert.equal(first.settings.onboardingPending, true);
   assert.equal(first.settings.instructions, defaultInstructions('en'));
-  assert.match(first.settings.instructions, /^英文润色。/);
+  assert.match(first.settings.instructions, /^English polish\./);
   await saveSettings(firstPath, { ...first.settings, language: 'zh-CN', instructions: defaultInstructions('zh-CN') });
-  assert.match(DEFAULTS.instructions, /^英文润色。/);
+  assert.match(DEFAULTS.instructions, /^English polish\./);
   assert.equal(DEFAULTS.instructions, DEFAULT_INSTRUCTIONS.en);
   assert.ok(DEFAULTS.instructions.length <= 2000);
   assert.equal(retargetInstructions(DEFAULT_INSTRUCTIONS.en, 'zh-CN'), DEFAULT_INSTRUCTIONS['zh-CN']);
-  assert.equal(retargetInstructions('中文润色。保留术语 Foo。', 'en'), '英文润色。保留术语 Foo。');
+  assert.equal(retargetInstructions('中文润色。保留术语 Foo。', 'en'), 'English polish. 保留术语 Foo。');
   const settingsPage = await readFile(new URL('../lib/settings.html', import.meta.url), 'utf8');
   assert(settingsPage.includes(DEFAULT_INSTRUCTIONS.en));
   assert(settingsPage.includes(DEFAULT_INSTRUCTIONS['zh-CN']));
@@ -123,9 +123,13 @@ try {
   assert.equal(message.content[0].text, draft, 'original event not mutated by the handler');
   assert.equal(entries.length, 1);
   assert.equal(entries[0][0], 'pi-jev-reply');
-  await saveSettings(config, { ...DEFAULTS, rewriteModel: 'test/other' });
+  assert.match(entries[0][1].text, /^rewrite · /);
+  assert.doesNotMatch(entries[0][1].text, /改写|流程图|图表|表格/);
+  await saveSettings(config, { ...DEFAULTS, language: 'zh-CN', instructions: defaultInstructions('zh-CN'), rewriteModel: 'test/other' });
   await hooks.get('session_start')({}, ctx);
   await hooks.get('message_end')({ message }, ctx);
+  assert.match(entries.at(-1)[1].text, /^改写 · /);
+  assert.doesNotMatch(entries.at(-1)[1].text, /\brewrite\b/);
   assert.equal(chosen, custom);
   const previous = calls;
   await hooks.get('message_end')({ message: { ...message, stopReason: 'error' } }, ctx);
@@ -159,9 +163,14 @@ try {
   assert.match(opened[1], /\/welcome#[a-f0-9]{48}$/);
   await hooks.get('session_start')({}, onboardCtx);
   assert.equal(opened.length, 2, 'subsequent sessions stay quiet');
-  assert.ok(commands.has('pi-jev-reply'));
-  await commands.get('pi-jev-reply').handler('welcome', onboardCtx);
+  assert.ok(commands.has('pi-jev-reply-setting'));
+  assert.equal(commands.has('pi-jev-reply'), false);
+  assert.equal(commands.get('clear-reply'), commands.get('pi-jev-reply-setting'), 'legacy alias uses the same handler');
+  await commands.get('pi-jev-reply-setting').handler('welcome', onboardCtx);
   assert.equal(opened.length, 3, 'guide can be reopened explicitly');
+  await commands.get('pi-jev-reply-setting').handler('', onboardCtx);
+  assert.equal(opened.length, 4, 'the primary command opens settings without arguments');
+  assert.match(opened[3], /\/#[a-f0-9]{48}$/);
   await hooks.get('session_shutdown')({}, onboardCtx);
   await rm(freshDir, { recursive: true, force: true });
   process.env.PI_CODING_AGENT_DIR = temp;
@@ -194,6 +203,18 @@ try {
   const endpoint = `${url.origin}/settings`;
   const page = await originalFetch(url.origin);
   const html = await page.text();
+  for (const [path, type] of [['slimselect.js', 'text/javascript'], ['page-select.js', 'text/javascript'], ['slimselect.css', 'text/css']]) {
+    const asset = await originalFetch(url.origin + '/vendor/' + path);
+    assert.equal(asset.status, 200);
+    assert(asset.headers.get('content-type').startsWith(type));
+    assert.match(asset.headers.get('content-security-policy'), /script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'/);
+    assert.match(asset.headers.get('content-security-policy'), /default-src 'none'/);
+    const source = await asset.text(); assert(source.length > 100);
+    if (path.endsWith('.js')) new Function(source);
+    assert.equal((await originalFetch(url.origin + '/vendor/' + path, {headers: {Origin: 'https://hostile.invalid'}})).status, 403);
+  }
+  assert.equal((await originalFetch(url.origin + '/vendor/LICENSE')).status, 403);
+  assert.equal((await originalFetch(url.origin + '/vendor/slimselect.js?other')).status, 403);
   const guide = await originalFetch(web.welcomeUrl);
   assert.equal(guide.status, 200);
   const guideHtml = await guide.text();

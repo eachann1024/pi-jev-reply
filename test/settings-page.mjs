@@ -21,6 +21,7 @@ const context = vm.createContext({
   document:{getElementById:element, documentElement:{}, querySelectorAll:() => [], querySelector: selector => element(selector), createElement:() => element(Symbol())},
   location:{hash:'#test-only',pathname:'/',search:''}, history:{replaceState() {}}, window:{addEventListener() {}},
   fetch:async (_, options) => {calls.push(options); return response();}, AbortSignal, confirm:() => true,
+  setTimeout, clearTimeout,
 });
 vm.runInContext(source, context);
 const run = code => vm.runInContext(code, context);
@@ -28,9 +29,10 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
 await settle();
 assert.equal(calls.length, 1, 'boot only reads');
 assert.equal(run('dirty()'), false);
+assert.equal(element('instructions').value, run("presetInstructions('en')"), 'empty instructions show the language default');
 run("switchLanguage('zh-CN')");
 assert.equal(run('dirty()'), true);
-assert.equal(calls.length, 1, 'language changes do not write');
+assert.equal(calls.length, 1, 'language changes wait for autosave');
 assert.equal(element('instructions').value, run("presetInstructions('zh-CN')"));
 let finish;
 response = () => new Promise(resolve => {finish = resolve;});
@@ -38,7 +40,7 @@ const saving = run('save()');
 await settle();
 assert.equal(JSON.parse(calls[1].body).onboardingPending, true, 'full snapshot preserves onboarding state');
 assert.equal(calls[1].headers['If-Match'], '"v1"');
-assert.equal(element('settingsFields').disabled, true, 'edits locked during save');
+assert.equal(element('settingsFields').disabled, false, 'autosave keeps the form editable');
 await run('save()');
 assert.equal(calls.length, 2, 'no overlapping save');
 finish({ok:false,status:409});

@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>pi-jev-reply settings</title>
-<style>
-:root{--background:#f3f0e8;--foreground:#252b26;--primary:#294e3f;--muted:#64685f;--destructive:#914b3b;--border:#cccbbf;--ring:#294e3f;--paper:#fffdf7;--radius-sm:3px;--backdrop:#252b2666;--serif:'Didot','Baskerville','Songti SC',serif;--sans:'Avenir Next','Helvetica Neue','PingFang SC',sans-serif;--mono:'SFMono-Regular',monospace}
+<link rel="stylesheet" href="/vendor/slimselect.css"><style>
+:root{--background:#f3f0e8;--foreground:#252b26;--primary:#294e3f;--muted:#64685f;--destructive:#914b3b;--border:#cccbbf;--ring:#294e3f;--paper:#fffdf7;--radius-sm:3px;--backdrop:#252b2666;--serif:'Didot','Big Caslon','Baskerville','Hoefler Text','Songti SC',serif;--sans:'Optima','Gill Sans','Avenir Next','Helvetica Neue','PingFang SC',sans-serif;--mono:'SFMono-Regular','Menlo',monospace}
 *{box-sizing:border-box}
 body{margin:0;background:var(--background);color:var(--foreground);font:16px/1.5 var(--sans)}
-button,input,textarea{font:inherit;color:inherit}
+button,input,textarea,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--ring);outline-offset:4px}
 button{touch-action:manipulation;cursor:pointer;min-height:44px;border:1px solid var(--border);background:transparent;padding:8px 16px;border-radius:var(--radius-sm)}
 button.primary,.language-bar button[aria-pressed=true]{background:var(--primary);color:var(--paper);border-color:var(--primary)}
@@ -13,15 +13,18 @@ button:disabled{opacity:.5;cursor:default}
 p{margin:0}
 .shell{max-width:832px;margin:auto;padding:24px 24px 32px}
 .language-bar{display:flex;justify-content:space-between;align-items:center;gap:16px;font-size:14px}
+.language-status{position:fixed;top:24px;right:24px;z-index:2;font-weight:500;opacity:0;transition:opacity .2s;color:var(--muted);font-size:14px;pointer-events:none}
+.language-status.show{opacity:1}
+.language-status.error{color:var(--destructive);opacity:1}
 .language-bar div{display:flex;gap:4px}
 .language-bar button{padding:8px 12px}
 header{padding:24px 0 32px}
-h1{font:400 32px/1.25 var(--serif);margin:0}
+h1{font:400 32px/1.25 var(--serif);margin:0;letter-spacing:.01em}
 .settings{min-width:0}
 fieldset{border:0;padding:0;margin:0;min-width:0}
 #settingsFields:disabled{opacity:.6}
 .section{padding-bottom:32px;margin-bottom:32px;border-bottom:1px solid var(--border)}
-h2{font:400 24px/1.3 var(--serif);margin:0 0 24px}
+h2{font:400 24px/1.3 var(--serif);margin:0 0 24px;letter-spacing:.01em}
 .check{display:flex;gap:16px;align-items:flex-start;margin-bottom:24px;cursor:pointer}
 .check:last-child{margin-bottom:0}
 .check input{flex:none;width:24px;height:24px;margin:0;accent-color:var(--primary)}
@@ -29,8 +32,9 @@ h2{font:400 24px/1.3 var(--serif);margin:0 0 24px}
 .check small{display:block;color:var(--muted);font-size:14px;line-height:1.6;margin-top:4px}
 .field{margin-top:24px}
 .field>label{display:block;margin-bottom:8px;font-size:14px}
-input[type=text],input[type=number],textarea{width:100%;min-width:0;min-height:44px;border:1px solid var(--border);background:var(--paper);border-radius:var(--radius-sm);padding:12px}
+input[type=text],input[type=number],textarea,select{width:100%;min-width:0;min-height:44px;border:1px solid var(--border);background:var(--paper);border-radius:var(--radius-sm);padding:12px}
 textarea{resize:vertical;min-height:152px;font-size:14px;line-height:1.6;max-width:100%}
+.select-wrap{position:relative;display:block;min-width:0;max-width:100%}
 .hint{font-size:14px;color:var(--muted);margin-top:8px}
 .count{text-align:right;font:14px/1.6 var(--mono);color:var(--muted);margin-top:8px}
 summary{cursor:pointer;min-height:44px;font-weight:500}
@@ -52,6 +56,22 @@ dialog .actions{margin-top:24px;justify-content:flex-end}
 [hidden]{display:none!important}
 @media(hover:hover) and (pointer:fine){button:hover{border-color:var(--primary)}}
 @media(max-width:600px){.shell{padding:16px 16px 32px}.language-bar{flex-wrap:wrap}.advanced-grid{grid-template-columns:1fr}}
+
+/* Page-owned controls: native popup remains inaccessible even if assets fail. */
+.select-wrap select{display:none!important}
+.select-unavailable{display:block;width:100%;text-align:left}
+:root{--ss-primary-color:var(--primary);--ss-bg-color:var(--paper,var(--surface));--ss-font-color:var(--foreground);--ss-border-color:var(--border);--ss-disabled-color:var(--background);--ss-border-radius:3px;--ss-main-height:44px;--ss-option-height:44px;--ss-animation-timing:0s}
+.select-wrap .ss-main{font:inherit;padding:8px 12px;min-width:0;border-radius:3px}
+.select-wrap .ss-main:focus-visible{outline:2px solid var(--ring);outline-offset:3px;box-shadow:none}
+.select-wrap .ss-main .ss-values .ss-single{padding:0;line-height:1.5}
+.select-wrap .ss-main .ss-arrow{position:static;transform:none;flex:0 0 16px;width:16px;height:16px;margin:0 0 0 12px}
+.ss-content{font:16px/1.5 var(--sans);border-radius:3px!important;margin:0!important;box-shadow:0 4px 12px #0002}
+.ss-content .ss-list .ss-option{padding:8px 12px;overflow-wrap:anywhere;content-visibility:visible}
+.ss-content .ss-list .ss-option:hover:not(.ss-disabled){border-left:0}
+.ss-content .ss-list .ss-optgroup .ss-option{padding:8px 16px}
+.ss-content .ss-list .ss-optgroup-label-text{font-size:14px;overflow-wrap:anywhere}
+.ss-content .ss-list .ss-option.ss-disabled{color:var(--muted)}
+@media(prefers-reduced-motion:reduce){.ss-main,.ss-content,.ss-main *,.ss-content *{animation:none!important;transition:none!important}}
 </style></head>
 <body>
 <div class="shell">
@@ -103,12 +123,9 @@ dialog .actions{margin-top:24px;justify-content:flex-end}
 <h2 data-en="Rewrite settings" data-zh="改写设置">Rewrite settings</h2>
 <div class="field">
 <label for="rewriteModel" data-zh="改写模型" data-en="Rewrite model">Rewrite model</label>
-<input id="rewriteModel" type="text" list="models" maxlength="256" autocomplete="off" aria-describedby="currentModel modelHint">
-<datalist id="models">
-</datalist>
+<span class="select-wrap"><select id="rewriteModel" aria-describedby="currentModel"></select><button class="select-unavailable" type="button" disabled>Unavailable / 不可用</button></span>
 <p id="currentModel" class="hint">
 </p>
-<p id="modelHint" class="hint" data-zh="留空跟随当前模型；可输入 Pi 中已配置的 provider/model。" data-en="Leave blank to follow the current model, or enter a provider/model configured in Pi.">Leave blank to follow the current model, or enter a provider/model configured in Pi.</p>
 </div>
 <div class="field">
 <label for="instructions" data-zh="改写指令" data-en="Rewrite instructions">Rewrite instructions</label>
@@ -164,18 +181,17 @@ dialog .actions{margin-top:24px;justify-content:flex-end}
 </main>
 <div class="savebar">
 <div class="save-info">
-<strong id="status" role="status" aria-live="polite">Loading settings…</strong>
 <button id="retry" type="button" hidden>Retry</button>
 <button id="reload" type="button" hidden>Reload settings</button>
-<p data-zh="修改仅在保存后生效。界面语言也会切换默认润色指令；自定义文字会保留。" data-en="Changes take effect after saving. Changing language updates preset rewrite instructions; custom instructions are preserved.">Changes take effect after saving. Changing language updates preset rewrite instructions; custom instructions are preserved.</p>
+<p data-zh="修改会自动保存。界面语言也会切换默认润色指令；自定义文字会保留。" data-en="Changes save automatically. Changing language updates preset rewrite instructions; custom instructions are preserved.">Changes save automatically. Changing language updates preset rewrite instructions; custom instructions are preserved.</p>
 </div>
 <div class="actions">
 <button id="reset" disabled type="button" data-zh="恢复默认" data-en="Reset defaults">Reset defaults</button>
-<button id="save" disabled form="settings" type="submit" class="primary" data-zh="保存设置" data-en="Save settings">Save settings</button>
 </div>
 </div>
 
 </div>
+<strong id="status" class="language-status" role="status" aria-live="polite">Loading settings…</strong>
 <dialog id="resetDialog" aria-labelledby="resetTitle">
 <h2 id="resetTitle" data-zh="恢复默认设置？" data-en="Restore default settings?">Restore default settings?</h2>
 <p data-zh="恢复默认设置，并保留当前界面语言。修改仍需保存。" data-en="Restore defaults and keep your interface language. Save to apply the change.">Restore defaults and keep your interface language. Save to apply the change.</p>
@@ -185,6 +201,8 @@ dialog .actions{margin-top:24px;justify-content:flex-end}
 </div>
 </dialog>
 
+<script src="/vendor/slimselect.js"></script>
+<script src="/vendor/page-select.js"></script>
 <script>
 const I18N = {
   keyConfigured: {
@@ -203,10 +221,6 @@ const I18N = {
     en: 'Privacy note: If a Jev key is configured, Jev receives reply drafts to evaluate clarity and structure. Without a key, the current model or other handles the pass. Optional rewrite uses the selected model only when triggered.',
     'zh-CN': '隐私说明：配置了 Jev 密钥时，审核服务会接收回复草稿以评估清晰度与结构。未配置则由当前主模型或 other 处理。可选改写仅在触发时使用所选模型。'
   },
-  placeholderRewriteModel: {
-    en: 'Current main model',
-    'zh-CN': '当前主模型'
-  },
   currentModelPrefix: {
     en: 'Current main model: ',
     'zh-CN': '当前主模型：'
@@ -216,7 +230,7 @@ const I18N = {
     'zh-CN': '针对语气、风格或特定排版格式的补充指令…'
   },
   defaultInstructions: {
-    en: '英文润色。Rewrite in concrete, plain English so what changed, the outcome, and the limits are obvious. Drop unnecessary jargon instead of only expanding abbreviations. Keep every fact, number, path, command, and code identifier; do not invent or add recommendations. Stay concise.',
+    en: 'English polish. Rewrite in concrete, plain English so what changed, the outcome, and the limits are obvious. Drop unnecessary jargon instead of only expanding abbreviations. Keep every fact, number, path, command, and code identifier; do not invent or add recommendations. Stay concise.',
     'zh-CN': '中文润色。用具体、直白的中文写清改了什么、结果和限制；去掉不必要的黑话，不要只展开缩写。保留全部事实、数字、路径、命令和代码标识；不编造、不加建议；保持简洁。'
   },
   retryBtn: {
@@ -236,8 +250,8 @@ const I18N = {
     'zh-CN': '正在保存设置…'
   },
   saved: {
-    en: 'Settings saved',
-    'zh-CN': '设置已保存'
+    en: 'Saved',
+    'zh-CN': '已保存'
   },
   defaultsRestored: {
     en: 'Defaults restored in form (unsaved)',
@@ -278,11 +292,12 @@ function retargetInstructionLanguage(text, lang) {
   const next = presetInstructions(lang);
   if (isPresetInstructions(text)) return next;
   const trimmed = text.trim();
-  for (const prefix of ['中文润色', '英文润色']) {
+  for (const prefix of ['中文润色', '英文润色', 'Chinese polish', 'English polish']) {
     if (trimmed === prefix || trimmed.startsWith(prefix)) {
       const rest = trimmed.slice(prefix.length).replace(/^[。.\s]+/, '');
-      const nextPrefix = lang === 'zh-CN' ? '中文润色' : '英文润色';
-      return rest ? nextPrefix + '。' + rest : next;
+      const nextPrefix = lang === 'zh-CN' ? '中文润色' : 'English polish';
+      const sep = lang === 'zh-CN' ? '。' : '. ';
+      return rest ? nextPrefix + sep + rest : next;
     }
   }
   return text;
@@ -290,6 +305,7 @@ function retargetInstructionLanguage(text, lang) {
 
 
 const $ = id => document.getElementById(id);
+const modelSelect = window.pageSelect?.($('rewriteModel')) || {rebuild: fn => fn(), lock() {}, close() {}};
 const token = location.hash.slice(1);
 if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 let currentLang = 'en', snapshot = null, version = '', baseline = '', busy = false, conflict = false;
@@ -299,14 +315,14 @@ const numbers = new Set(['rewriteThreshold', 'visualThreshold', 'reviewTimeoutMs
 const text = (en, zh) => currentLang === 'en' ? en : zh;
 const t = key => I18N[key]?.[currentLang] || '';
 Object.assign(I18N, {
-  dirty: {en:'Unsaved changes', 'zh-CN':'有未保存的修改'},
-  missingToken: {en:'This page has no access token. Open /pi-jev-reply settings from Pi.', 'zh-CN':'此页缺少访问令牌。请在 Pi 中执行 /pi-jev-reply settings。'},
-  forbidden: {en:'Access expired or denied. Open /pi-jev-reply settings from Pi again.', 'zh-CN':'访问已过期或被拒绝。请在 Pi 中重新执行 /pi-jev-reply settings。'},
+  dirty: {en:'Changed', 'zh-CN':'已修改'},
+  missingToken: {en:'This page has no access token. Open /pi-jev-reply-setting from Pi.', 'zh-CN':'此页缺少访问令牌。请在 Pi 中执行 /pi-jev-reply-setting。'},
+  forbidden: {en:'Access expired or denied. Open /pi-jev-reply-setting from Pi again.', 'zh-CN':'访问已过期或被拒绝。请在 Pi 中重新执行 /pi-jev-reply-setting。'},
   conflict: {en:'Settings changed elsewhere. Your edits are preserved. Reload explicitly to discard them and get the latest settings.', 'zh-CN':'设置已在别处修改。当前编辑已保留；明确重新加载后才会丢弃编辑并读取最新设置。'},
   keyPending: {en:'Jev key status unavailable', 'zh-CN':'Jev 密钥状态尚不可用'},
   keyHelp: {en:'Jev is optional. Without a key, enabled rewriting goes directly to the selected or current model. If neither is available, Pi uses an available fallback. Set TYPESAFE_API_KEY or ~/.config/typesafe/api_key to enable Jev review.', 'zh-CN':'Jev 可选。未配置密钥时，已启用的改写直接使用所选模型或当前模型；两者不可用时会选用可用的备用模型。设置 TYPESAFE_API_KEY 或 ~/.config/typesafe/api_key 可启用 Jev 审核。'},
   privacyText: {en:'With a key, Jev receives reply drafts for review. When rewriting is triggered, the selected model receives the draft and user request.', 'zh-CN':'配置密钥后，Jev 会接收回复草稿进行审核。触发改写时，所选模型会接收草稿与用户请求。'},
-  networkError: {en:'Connection lost. Your edits are preserved. Retry, or reopen /pi-jev-reply settings from Pi if the service has stopped.', 'zh-CN':'连接已断开，当前编辑已保留。可重试；若服务已停止，请在 Pi 中重新执行 /pi-jev-reply settings。'}
+  networkError: {en:'Connection lost. Your edits are preserved. Retry, or reopen /pi-jev-reply-setting from Pi if the service has stopped.', 'zh-CN':'连接已断开，当前编辑已保留。可重试；若服务已停止，请在 Pi 中重新执行 /pi-jev-reply-setting。'}
 });
 function read() {
   const values = { language: currentLang };
@@ -320,6 +336,7 @@ function populate(settings) {
     if ($(key).type === 'checkbox') $(key).checked = settings[key];
     else $(key).value = settings[key] ?? '';
   }
+  if (!$('instructions').value.trim()) $('instructions').value = presetInstructions(currentLang);
 }
 function fingerprint() { return JSON.stringify([read(), ...[...numbers].map(key => $(key).value)]); }
 function dirty() { return !!baseline && fingerprint() !== baseline; }
@@ -330,7 +347,7 @@ function translate() {
   document.querySelector('.language-bar').setAttribute('aria-label', text('Interface language', '界面语言'));
   $('lang-en').setAttribute('aria-pressed', String(currentLang === 'en'));
   $('lang-zh').setAttribute('aria-pressed', String(currentLang === 'zh-CN'));
-  $('rewriteModel').placeholder = t('placeholderRewriteModel');
+  updateModels();
   $('instructions').placeholder = t('placeholderInstructions');
   $('currentModel').textContent = t('currentModelPrefix') + (snapshot?.currentModel || text('No current model', '没有当前模型'));
   if (snapshot && !snapshot.models?.length) $('currentModel').textContent += text(' · No available models reported', ' · 未提供可用模型');
@@ -344,9 +361,11 @@ function render() {
   translate();
   $('count').textContent = $('instructions').value.length + ' / 2000';
   $('status').textContent = t(notice);
-  $('status').className = ['networkError','conflict','settingsError','invalidSettings','serverError','missingToken','forbidden'].includes(notice) ? 'error' : '';
-  $('settingsFields').disabled = busy || !snapshot || !!snapshot.settingsError;
-  $('save').disabled = busy || !snapshot || !!snapshot.settingsError || conflict || !dirty();
+  const quiet = ['loading','ready','saving'].includes(notice);
+  $('status').className = 'language-status' + (['networkError','conflict','settingsError','invalidSettings','serverError','missingToken','forbidden'].includes(notice) ? ' error' : quiet ? '' : ' show');
+  $('status').hidden = quiet;
+  $('settingsFields').disabled = !snapshot || !!snapshot.settingsError;
+  modelSelect.lock($('settingsFields').disabled);
   $('reset').disabled = busy || !snapshot?.defaults || !!snapshot.settingsError;
   $('lang-en').disabled = $('lang-zh').disabled = busy;
   $('retry').hidden = !retryAction;
@@ -354,14 +373,27 @@ function render() {
   $('reload').hidden = !conflict;
   $('reload').disabled = busy;
 }
-function updateModels() {
-  $('models').replaceChildren();
-  for (const model of snapshot.models || []) {
-    const option = document.createElement('option');
-    option.value = model.id;
-    option.textContent = model.label || model.id;
-    $('models').append(option);
+function updateModels(selected = $('rewriteModel').value) {
+  modelSelect.rebuild(() => {
+  const select = $('rewriteModel');
+  const option = (value, label) => {
+    const el = document.createElement('option');
+    el.value = value; el.textContent = label; return el;
+  };
+  select.replaceChildren(option('', text('Follow current model', '跟随当前模型')));
+  for (const preferred of [true, false]) {
+    const models = (snapshot?.models || []).filter(model => !!model.preferred === preferred);
+    if (!models.length) continue;
+    const group = document.createElement('optgroup');
+    group.label = preferred ? text('Pi session models', 'Pi 会话模型') : text('Other available models', '其他可用模型');
+    for (const model of models) group.append(option(model.id, model.label || model.id));
+    select.append(group);
   }
+  if (selected && !(snapshot?.models || []).some(model => model.id === selected)) {
+    select.append(option(selected, selected));
+  }
+  select.value = selected;
+  });
 }
 function validate() {
   for (const key of fields) {
@@ -369,8 +401,6 @@ function validate() {
     el.setCustomValidity('');
     if (!el.validity.valid) el.setCustomValidity(text('Check this value and its allowed range.', '请检查此值及其允许范围。'));
   }
-  const model = $('rewriteModel').value.trim();
-  if (model && !/^[\w.-]+\/\S+$/.test(model)) $('rewriteModel').setCustomValidity(text('Use a configured provider/model identifier.', '请输入已配置的 provider/model 标识。'));
   if ($('instructions').value.length > 2000) $('instructions').setCustomValidity(text('Use at most 2,000 characters.', '最多输入 2,000 个字符。'));
   const invalid = fields.map(key => $(key)).find(el => !el.validity.valid);
   if (invalid) {
@@ -397,7 +427,7 @@ async function load() {
     const result = await request('GET');
     snapshot = result.data; version = result.version;
     currentLang = snapshot.settings.language === 'zh-CN' ? 'zh-CN' : 'en';
-    populate(snapshot.settings); updateModels(); baseline = fingerprint(); conflict = false;
+    updateModels(snapshot.settings.rewriteModel); populate(snapshot.settings); baseline = fingerprint(); conflict = false;
     notice = snapshot.settingsError ? 'settingsError' : 'ready';
     if (snapshot.settingsError) retryAction = load;
   } catch (error) { notice = error.status === 403 ? 'forbidden' : 'networkError'; if (error.status !== 403) retryAction = load; }
@@ -407,17 +437,22 @@ async function save(event) {
   event?.preventDefault();
   if (busy || !snapshot || snapshot.settingsError || conflict || !dirty() || !validate()) return;
   const payload = {...snapshot.settings, ...read()};
-  busy = true; notice = 'saving'; retryAction = null; render();
+  busy = true; retryAction = null;
   try {
     const result = await request('PUT', payload);
     snapshot = result.data; version = result.version;
-    populate(snapshot.settings); updateModels(); baseline = fingerprint(); notice = 'saved';
+    updateModels(snapshot.settings.rewriteModel); populate(snapshot.settings); baseline = fingerprint(); notice = 'saved';
   } catch (error) {
     conflict = error.status === 409;
     notice = conflict ? 'conflict' : error.status === 403 ? 'forbidden' : error.status === 400 ? 'invalidSettings' : error.status ? 'serverError' : 'networkError';
     // Keep the old ETag after an uncertain save: retry must never overwrite a newer revision.
     if (!conflict && error.status !== 403) retryAction = save;
   } finally { busy = false; render(); }
+}
+let saveTimer;
+function queueSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { if (dirty()) save(); }, 400);
 }
 function switchLanguage(language) {
   if (busy || currentLang === language) return;
@@ -428,20 +463,24 @@ function switchLanguage(language) {
   }
   for (const key of fields) $(key).setCustomValidity('');
   render();
+  queueSave();
 }
 $('lang-en').addEventListener('click', () => switchLanguage('en'));
 $('lang-zh').addEventListener('click', () => switchLanguage('zh-CN'));
-$('settings').addEventListener('input', event => {
+function formChanged(event) {
   event.target.setCustomValidity?.('');
-  if (!conflict) notice = dirty() ? 'dirty' : 'ready';
+  if (!conflict && notice !== 'saving') notice = dirty() ? 'dirty' : 'ready';
   render();
-});
+  queueSave();
+}
+$('settings').addEventListener('input', formChanged);
+$('settings').addEventListener('change', formChanged);
 $('settings').addEventListener('submit', save);
 $('retry').addEventListener('click', () => retryAction?.());
 $('reload').addEventListener('click', () => {
   if (!busy && confirm(text('Discard your unsaved edits and load the latest settings?', '放弃未保存的编辑并加载最新设置？'))) load();
 });
-$('reset').addEventListener('click', () => $('resetDialog').showModal());
+$('reset').addEventListener('click', () => { modelSelect.close(); $('resetDialog').showModal(); });
 $('cancelReset').addEventListener('click', () => $('resetDialog').close());
 $('confirmReset').addEventListener('click', () => {
   if (busy || !snapshot?.defaults) return;
@@ -449,6 +488,7 @@ $('confirmReset').addEventListener('click', () => {
   fields.forEach(key => $(key).setCustomValidity(''));
   notice = conflict ? 'conflict' : dirty() ? 'defaultsRestored' : 'ready';
   $('resetDialog').close(); render();
+  queueSave();
 });
 window.addEventListener('beforeunload', event => { if (dirty()) { event.preventDefault(); event.returnValue = ''; } });
 render();

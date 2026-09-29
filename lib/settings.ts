@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 
 export const DEFAULT_INSTRUCTIONS: { en: string; "zh-CN": string } = {
-  en: "英文润色。Rewrite in concrete, plain English so what changed, the outcome, and the limits are obvious. Drop unnecessary jargon instead of only expanding abbreviations. Keep every fact, number, path, command, and code identifier; do not invent or add recommendations. Stay concise.",
+  en: "English polish. Rewrite in concrete, plain English so what changed, the outcome, and the limits are obvious. Drop unnecessary jargon instead of only expanding abbreviations. Keep every fact, number, path, command, and code identifier; do not invent or add recommendations. Stay concise.",
   "zh-CN": "中文润色。用具体、直白的中文写清改了什么、结果和限制；去掉不必要的黑话，不要只展开缩写。保留全部事实、数字、路径、命令和代码标识；不编造、不加建议；保持简洁。",
 };
 
@@ -20,7 +20,7 @@ export const DEFAULTS = {
   visualThreshold: 0.75,
   jevModel: "jev-latest",
   reviewTimeoutMs: 5000,
-  rewriteTimeoutMs: 30000,
+  rewriteTimeoutMs: 10000,
   settingsIdleMinutes: 5,
   instructions: DEFAULT_INSTRUCTIONS.en,
 };
@@ -39,11 +39,12 @@ export function retargetInstructions(text: string, language: Language): string {
   const next = defaultInstructions(language);
   const trimmed = text.trim();
   if (!trimmed || trimmed === DEFAULT_INSTRUCTIONS.en || trimmed === DEFAULT_INSTRUCTIONS["zh-CN"]) return next;
-  for (const prefix of ["中文润色", "英文润色"] as const) {
+  for (const prefix of ["中文润色", "英文润色", "Chinese polish", "English polish"] as const) {
     if (trimmed === prefix || trimmed.startsWith(prefix)) {
       const rest = trimmed.slice(prefix.length).replace(/^[。.\s]+/, "");
-      const nextPrefix = language === "zh-CN" ? "中文润色" : "英文润色";
-      return rest ? `${nextPrefix}。${rest}` : next;
+      const nextPrefix = language === "zh-CN" ? "中文润色" : "English polish";
+      const sep = language === "zh-CN" ? "。" : ". ";
+      return rest ? `${nextPrefix}${sep}${rest}` : next;
     }
   }
   return text;
@@ -85,6 +86,7 @@ export function parseSettings(input: unknown): Settings {
     throw new TypeError("Use provider/model for the rewrite model");
   }
   if (!/^[\w.-]{1,80}$/.test(next.jevModel) || next.instructions.length > 2000) throw new TypeError("Invalid review instructions or Jev model");
+  if (!next.instructions.trim()) next.instructions = defaultInstructions(next.language);
   for (const key of ["rewriteThreshold", "visualThreshold"] as const) {
     if (!Number.isFinite(next[key]) || next[key] < 0 || next[key] > 1) throw new TypeError(`Invalid ${key}`);
   }

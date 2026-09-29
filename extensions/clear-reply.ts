@@ -136,7 +136,10 @@ export default function clearReply(pi: ExtensionAPI) {
       const edited = parseEdited(textContent(result.content), draft, decision);
       if (operation !== lifetime || settings !== revision || !settings.enabled || ctx.hasPendingMessages()) return;
       // No drafts, credentials or model reasoning in diagnostics.
-      pi.appendEntry(PLUGIN, { text: [decision.rewrite ? "rewrite" : "", decision.visual !== "none" ? decision.visual : "", `${model.provider}/${model.id}`].filter(Boolean).join(" · ") });
+      const record = settings.language === "zh-CN"
+        ? [decision.rewrite ? "改写" : "", decision.visual !== "none" ? visualLabel(decision.visual) : "", modelLabel(model)]
+        : [decision.rewrite ? "rewrite" : "", decision.visual !== "none" ? decision.visual : "", `${model.provider}/${model.id}`];
+      pi.appendEntry(PLUGIN, { text: record.filter(Boolean).join(" · ") });
       return { message: { ...message, content: [
         ...message.content.filter(part => part.type !== "text"),
         { type: "text" as const, text: edited },
@@ -160,15 +163,22 @@ export default function clearReply(pi: ExtensionAPI) {
           const { startSettingsWeb } = await import("../lib/settings-web.ts");
           return startSettingsWeb(() => {
             const current = context ?? ctx;
+            const available = current.modelRegistry.getAvailable();
+            const modelId = (model: typeof available[number]) => `${model.provider}/${model.id}`;
+            const byId = new Map(available.map(model => [modelId(model), model]));
+            const preferred = new Set([
+              ...current.scopedModels.map(({ model }) => modelId(model)),
+              ...(current.model ? [modelId(current.model)] : []),
+            ].filter(id => byId.has(id)));
+            const ids = new Set([...preferred, ...available.map(modelId)]);
             return {
               settings, defaults: DEFAULTS, keyAvailable: Boolean(key), settingsError: configError,
               currentModel: current.model ? `${current.model.provider}/${current.model.id}` : "",
-              models: current.modelRegistry.getAvailable().map(model => ({ id: `${model.provider}/${model.id}`, label: `${model.name} (${model.provider}/${model.id})` })),
+              models: [...ids].map(id => ({ id, label: `${byId.get(id)!.name || id} (${id})`, preferred: preferred.has(id) })),
             };
           }, async value => {
             if (configError) throw new TypeError("Repair clear-reply.json before saving");
             const next = parseSettings(value);
-            if (next.rewriteModel && !lookupModel(context ?? ctx, next.rewriteModel)) throw new TypeError("Unknown rewrite model");
             await saveSettings(settingsPath(), next);
             settings = next;
             configError = false;
@@ -189,19 +199,19 @@ export default function clearReply(pi: ExtensionAPI) {
         : pi.exec("xdg-open", [url]);
       const result = await launch().catch(() => ({ code: 1 }));
       if (result.code !== 0) {
-        ctx.ui.notify(copy(`Open locally: ${url} (or run /pi-jev-reply welcome)`, `请在本机打开：${url}（或执行 /pi-jev-reply welcome）`), "info");
+        ctx.ui.notify(copy(`Open locally: ${url} (or run /pi-jev-reply-setting welcome)`, `请在本机打开：${url}（或执行 /pi-jev-reply-setting welcome）`), "info");
       } else if (welcome && settings.onboardingPending && operation === lifetime && !operation.signal.aborted) {
         const next = { ...settings, onboardingPending: false };
         await saveSettings(settingsPath(), next);
         settings = next;
       }
     } catch {
-      ctx.ui.notify(copy("Could not open the page. Run /pi-jev-reply welcome to retry the guide, or /pi-jev-reply for settings.", "无法打开设置，请检查文件权限后重试。"), "error");
+      ctx.ui.notify(copy("Could not open the page. Run /pi-jev-reply-setting welcome to retry the guide, or /pi-jev-reply-setting for settings.", "无法打开设置，请检查文件权限后重试。"), "error");
     }
   }
 
   const command = {
-    description: "Open pi-jev-reply settings; or use on, off, status",
+    description: "Open reply settings; manage rewriting, models, and preferences",
     handler: async (args: string, ctx: ExtensionContext) => {
       const action = args.trim().toLowerCase();
       if (!action || action === "settings") { await openSettings(ctx); return; }
@@ -214,7 +224,7 @@ export default function clearReply(pi: ExtensionAPI) {
         return;
       }
       if (action !== "on" && action !== "off") {
-        ctx.ui.notify("Usage: /pi-jev-reply [settings|welcome|on|off|status]", "info");
+        ctx.ui.notify("Usage: /pi-jev-reply-setting [settings|welcome|on|off|status]", "info");
         return;
       }
       try {
@@ -227,6 +237,17 @@ export default function clearReply(pi: ExtensionAPI) {
       } catch { ctx.ui.notify(copy("Settings were not saved. Check the configuration file.", "设置未保存，请检查配置文件。"), "error"); }
     },
   };
-  pi.registerCommand("pi-jev-reply", command);
+  pi.registerCommand("pi-jev-reply-setting", command);
   pi.registerCommand("clear-reply", command);
+}
+
+function visualLabel(visual: string) {
+  if (visual === "diagram") return "流程图";
+  if (visual === "chart") return "图表";
+  if (visual === "table") return "表格";
+  return visual;
+}
+
+function modelLabel(model: { provider: string; id: string; name?: string }) {
+  return model.name || `${model.provider}/${model.id}`;
 }

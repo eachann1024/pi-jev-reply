@@ -22,7 +22,7 @@ pi install npm:@each1024/pi-jev-reply
 
 - **默认英文：** 设置中可切换中文；已有语言偏好不会被覆盖。
 - **默认使用主模型：** 不配置 Jev 密钥也能直接使用当前 Pi 模型润色。
-- **只自动打开一次：** 此后保持安静，可用 `/pi-jev-reply welcome` 重看引导。
+- **只自动打开一次：** 此后保持安静，可用 `/pi-jev-reply-setting welcome` 重看引导。
 
 需要 Pi ≥ 0.85.1、Node ≥ 22.18.0。仅支持交互式 TUI；RPC 和打印模式不会打开浏览器。
 
@@ -43,10 +43,10 @@ pi install npm:@each1024/pi-jev-reply
 *功能示意：默认使用当前 Pi 模型，也可另选模型，并调整改写、图表和自定义指令。不是界面截图。*
 
 ```text
-/pi-jev-reply             打开设置
-/pi-jev-reply welcome     重看新手引导
-/pi-jev-reply on | off    开启或关闭
-/pi-jev-reply status      查看模型和密钥状态
+/pi-jev-reply-setting             打开设置
+/pi-jev-reply-setting welcome     重看新手引导
+/pi-jev-reply-setting on | off    开启或关闭
+/pi-jev-reply-setting status      查看模型和密钥状态
 ```
 
 选择模型、开关改写和图表、自定义指令。本地服务仅在首次引导或主动打开时启动，默认闲置五分钟关闭。旧命令 `/clear-reply` 仍可使用。
