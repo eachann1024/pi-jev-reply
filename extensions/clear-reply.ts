@@ -86,11 +86,9 @@ export default function clearReply(pi: ExtensionAPI) {
   pi.on("session_start", async (_, ctx) => {
     reset();
     context = ctx;
-    let firstRun = false;
     try {
       const loaded = await loadOrCreateSettings(settingsPath());
       settings = loaded.settings;
-      firstRun = loaded.firstRun;
       configError = false;
     } catch {
       configError = true;
@@ -98,11 +96,8 @@ export default function clearReply(pi: ExtensionAPI) {
     }
     try { key = await readJevKey(); }
     catch { key = ""; ctx.ui.notify("pi-jev-reply: Jev credentials could not be read. You can still open settings.", "warning"); }
-    if (firstRun && ctx.mode === "tui") {
-      ctx.ui.notify(copy(
-        "pi-jev-reply is on. The session shows a pi-jev-reply mark when it reviews a reply. Open /pi-jev-reply only if you need settings.",
-        "pi-jev-reply 已默认开启。检查回复时会话会显示 pi-jev-reply 标识；需要改选项时再执行 /pi-jev-reply。",
-      ), "info");
+    if (!configError && settings.onboardingPending && ctx.mode === "tui") {
+      await openSettings(ctx, true);
     }
   });
   pi.on("session_before_switch", () => { reset(); });
@@ -154,7 +149,7 @@ export default function clearReply(pi: ExtensionAPI) {
     } finally { status(ctx); }
   });
 
-  async function openSettings(ctx: ExtensionContext) {
+  async function openSettings(ctx: ExtensionContext, welcome = false) {
     context = ctx;
     if (ctx.mode !== "tui") { ctx.ui.notify("pi-jev-reply HTML settings require Pi interactive mode.", "warning"); return; }
     const operation = lifetime;
@@ -188,13 +183,20 @@ export default function clearReply(pi: ExtensionAPI) {
         } finally { if (opening === pending) opening = undefined; }
       }
       web.touch();
-      const url = web.url;
-      const result = process.platform === "darwin" ? await pi.exec("open", [url])
-        : process.platform === "win32" ? await pi.exec("rundll32.exe", ["url.dll,FileProtocolHandler", url])
-        : await pi.exec("xdg-open", [url]);
-      if (result.code !== 0) ctx.ui.notify(copy(`Open locally: ${url}`, `请在本机打开：${url}`), "info");
+      const url = welcome ? web.welcomeUrl : web.url;
+      const launch = () => process.platform === "darwin" ? pi.exec("open", [url])
+        : process.platform === "win32" ? pi.exec("rundll32.exe", ["url.dll,FileProtocolHandler", url])
+        : pi.exec("xdg-open", [url]);
+      const result = await launch().catch(() => ({ code: 1 }));
+      if (result.code !== 0) {
+        ctx.ui.notify(copy(`Open locally: ${url} (or run /pi-jev-reply welcome)`, `请在本机打开：${url}（或执行 /pi-jev-reply welcome）`), "info");
+      } else if (welcome && settings.onboardingPending && operation === lifetime && !operation.signal.aborted) {
+        const next = { ...settings, onboardingPending: false };
+        await saveSettings(settingsPath(), next);
+        settings = next;
+      }
     } catch {
-      ctx.ui.notify(copy("Could not open settings. Check file permissions and try again.", "无法打开设置，请检查文件权限后重试。"), "error");
+      ctx.ui.notify(copy("Could not open the page. Run /pi-jev-reply welcome to retry the guide, or /pi-jev-reply for settings.", "无法打开设置，请检查文件权限后重试。"), "error");
     }
   }
 
@@ -203,6 +205,7 @@ export default function clearReply(pi: ExtensionAPI) {
     handler: async (args: string, ctx: ExtensionContext) => {
       const action = args.trim().toLowerCase();
       if (!action || action === "settings") { await openSettings(ctx); return; }
+      if (action === "welcome") { await openSettings(ctx, true); return; }
       if (action === "status") {
         ctx.ui.notify(copy(
           `pi-jev-reply: ${active() ? "enabled" : "inactive"}; Jev key ${key ? "configured" : "missing, using current model or other"}; model ${settings.rewriteModel || "current main model"}.`,
@@ -211,7 +214,7 @@ export default function clearReply(pi: ExtensionAPI) {
         return;
       }
       if (action !== "on" && action !== "off") {
-        ctx.ui.notify("Usage: /pi-jev-reply [settings|on|off|status]", "info");
+        ctx.ui.notify("Usage: /pi-jev-reply [settings|welcome|on|off|status]", "info");
         return;
       }
       try {

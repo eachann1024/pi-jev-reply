@@ -10,6 +10,7 @@ const temp = await mkdtemp(join(tmpdir(), 'pi-jev-reply-'));
 const originalFetch = globalThis.fetch;
 const oldDir = process.env.PI_CODING_AGENT_DIR;
 const oldKey = process.env.TYPESAFE_API_KEY;
+const oldLang = process.env.LANG;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const score = (rewrite = .98, visual = 'none') => ({ answers: {
   needs_rewrite: { type: 'noul', noul: rewrite },
@@ -26,9 +27,11 @@ try {
   const firstPath = join(temp, 'first-run.json');
   const first = await loadOrCreateSettings(firstPath, { LANG: 'zh_CN.UTF-8' });
   assert.equal(first.firstRun, true);
-  assert.equal(first.settings.language, 'zh-CN');
-  assert.equal(first.settings.instructions, defaultInstructions('zh-CN'));
-  assert.match(first.settings.instructions, /^中文润色。/);
+  assert.equal(first.settings.language, 'en');
+  assert.equal(first.settings.onboardingPending, true);
+  assert.equal(first.settings.instructions, defaultInstructions('en'));
+  assert.match(first.settings.instructions, /^英文润色。/);
+  await saveSettings(firstPath, { ...first.settings, language: 'zh-CN', instructions: defaultInstructions('zh-CN') });
   assert.match(DEFAULTS.instructions, /^英文润色。/);
   assert.equal(DEFAULTS.instructions, DEFAULT_INSTRUCTIONS.en);
   assert.ok(DEFAULTS.instructions.length <= 2000);
@@ -77,6 +80,8 @@ try {
   const { default: extension } = await import('../extensions/clear-reply.ts');
   const hooks = new Map(), commands = new Map(), notifications = [], entries = [];
   let transformer, chosen, completionCount = 0, calls = 0;
+  const opened = [];
+  let openCode = 0;
   const main = { provider: 'test', id: 'main', maxTokens: 8192 };
   const custom = { provider: 'test', id: 'other', maxTokens: 8192 };
   const ctx = {
@@ -95,7 +100,7 @@ try {
   extension({
     on: (name, fn) => hooks.set(name, fn), registerCommand: (name, command) => commands.set(name, command),
     registerMarkdownTransformer: fn => { transformer = fn; }, registerEntryRenderer: () => {}, appendEntry: (...entry) => entries.push(entry),
-    exec: async () => { throw new Error('settings must stay closed on first run'); },
+    exec: async (_, args) => { opened.push(args.at(-1)); if (openCode === -1) throw new Error('launcher unavailable'); return { code: openCode }; },
   });
   globalThis.fetch = async (_, options) => {
     calls++;
@@ -104,6 +109,7 @@ try {
     return Response.json(score());
   };
   await hooks.get('session_start')({}, ctx);
+  assert.equal(opened.length, 0, 'existing installs must not show onboarding');
   assert.equal(transformer('draft', { messageType: 'assistant', isStreaming: true }), '');
   assert.equal(transformer('final', { messageType: 'assistant', isStreaming: false }), 'final');
   const message = { role: 'assistant', stopReason: 'stop', content: [{ type: 'text', text: draft }], usage: { output: 12 } };
@@ -129,18 +135,33 @@ try {
   assert.equal(await hooks.get('message_end')({ message }, ctx), undefined);
   assert.equal(notifications.length, 1, 'failures keep original and notify once');
 
-  // First-run creates locale settings and shows one onboarding tip.
+  // First-run waits through RPC, opens once in TUI, defaults to English and can be replayed.
   const freshDir = await mkdtemp(join(tmpdir(), 'pi-jev-reply-first-'));
   process.env.PI_CODING_AGENT_DIR = freshDir;
   process.env.LANG = 'zh_CN.UTF-8';
   delete process.env.TYPESAFE_API_KEY;
   const onboard = [];
-  await hooks.get('session_start')({}, { ...ctx, mode: 'tui', ui: { notify: text => onboard.push(text) } });
+  const onboardCtx = { ...ctx, ui: { notify: text => onboard.push(text) } };
+  await hooks.get('session_start')({}, { ...onboardCtx, mode: 'rpc' });
+  assert.equal(opened.length, 0, 'RPC must never open a browser');
+  assert.equal((JSON.parse(await readFile(join(freshDir, 'clear-reply.json'), 'utf8'))).onboardingPending, true);
+  openCode = -1;
+  await hooks.get('session_start')({}, onboardCtx);
+  assert.match(onboard[0], /Open locally:/);
+  assert.equal((JSON.parse(await readFile(join(freshDir, 'clear-reply.json'), 'utf8'))).onboardingPending, true, 'failed launch is retryable');
+  openCode = 0;
+  await hooks.get('session_start')({}, onboardCtx);
   const created = JSON.parse(await readFile(join(freshDir, 'clear-reply.json'), 'utf8'));
-  assert.equal(created.language, 'zh-CN');
-  assert.equal(onboard.length, 1);
-  assert.match(onboard[0], /默认开启|is on/);
+  assert.equal(created.language, 'en');
+  assert.equal(created.onboardingPending, false);
+  assert.equal(opened.length, 2);
+  assert.match(opened[1], /\/welcome#[a-f0-9]{48}$/);
+  await hooks.get('session_start')({}, onboardCtx);
+  assert.equal(opened.length, 2, 'subsequent sessions stay quiet');
   assert.ok(commands.has('pi-jev-reply'));
+  await commands.get('pi-jev-reply').handler('welcome', onboardCtx);
+  assert.equal(opened.length, 3, 'guide can be reopened explicitly');
+  await hooks.get('session_shutdown')({}, onboardCtx);
   await rm(freshDir, { recursive: true, force: true });
   process.env.PI_CODING_AGENT_DIR = temp;
   process.env.TYPESAFE_API_KEY = '';
@@ -172,6 +193,14 @@ try {
   const endpoint = `${url.origin}/settings`;
   const page = await originalFetch(url.origin);
   const html = await page.text();
+  const guide = await originalFetch(web.welcomeUrl);
+  assert.equal(guide.status, 200);
+  const guideHtml = await guide.text();
+  assert.match(guideHtml, /<html lang="en">/);
+  assert.match(guideHtml, /Open settings/);
+  assert.match(guide.headers.get('Content-Security-Policy'), /frame-ancestors 'none'/);
+  new Function(guideHtml.match(/<script>([\s\S]*?)<\/script>/)[1]);
+  assert.equal((await originalFetch(url.origin + '/welcome', { headers: { Origin: 'https://example.com' } })).status, 403);
   assert.match(html, /<html lang="en">/);
   assert.match(html, /zh-CN/);
   assert(!html.includes('setInterval('), 'no browser polling');
@@ -202,5 +231,6 @@ try {
   globalThis.fetch = originalFetch;
   if (oldDir === undefined) delete process.env.PI_CODING_AGENT_DIR; else process.env.PI_CODING_AGENT_DIR = oldDir;
   if (oldKey === undefined) delete process.env.TYPESAFE_API_KEY; else process.env.TYPESAFE_API_KEY = oldKey;
+  if (oldLang === undefined) delete process.env.LANG; else process.env.LANG = oldLang;
   await rm(temp, { recursive: true, force: true });
 }

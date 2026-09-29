@@ -2,13 +2,14 @@ import { createServer } from "node:http";
 import { createHash, randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
-/** Loaded only by the settings command. No background listener or polling. */
+/** Loaded for first-run onboarding or explicit settings commands; idle-closes. */
 export async function startSettingsWeb(
   snapshot: () => { settings: unknown },
   update: (value: unknown) => Promise<void>,
   idleMs: () => number,
 ) {
   const html = await readFile(new URL("./settings.html", import.meta.url));
+  const welcome = await readFile(new URL("./welcome.html", import.meta.url));
   const token = randomBytes(24).toString("hex");
   let origin = "";
   let closed = false;
@@ -36,6 +37,9 @@ export async function startSettingsWeb(
     res.setHeader("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'");
     if (req.headers.host !== origin.slice(7) || (req.headers.origin && req.headers.origin !== origin)) {
       res.writeHead(403).end(); return;
+    }
+    if (req.method === "GET" && req.url === "/welcome") {
+      res.setHeader("Content-Type", "text/html; charset=utf-8"); res.end(welcome); return;
     }
     if (req.method === "GET" && req.url === "/") {
       res.setHeader("Content-Type", "text/html; charset=utf-8"); res.end(html); return;
@@ -83,5 +87,5 @@ export async function startSettingsWeb(
   origin = `http://127.0.0.1:${address.port}`;
   server.unref();
   touch();
-  return { url: `${origin}/#${token}`, close, touch, get closed() { return closed; } };
+  return { url: `${origin}/#${token}`, welcomeUrl: `${origin}/welcome#${token}`, close, touch, get closed() { return closed; } };
 }

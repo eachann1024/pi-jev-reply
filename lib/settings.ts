@@ -10,6 +10,7 @@ export const DEFAULT_INSTRUCTIONS: { en: string; "zh-CN": string } = {
 
 export const DEFAULTS = {
   enabled: true,
+  onboardingPending: false,
   language: "en" as "en" | "zh-CN",
   rewriteModel: "",
   rewrite: true,
@@ -101,13 +102,13 @@ export async function loadSettings(path: string): Promise<Settings> {
   }
 }
 
-/** Load settings; on first install (missing file) create locale-aware defaults and mark firstRun. */
-export async function loadOrCreateSettings(path: string, env: NodeJS.ProcessEnv = process.env): Promise<{ settings: Settings; firstRun: boolean }> {
+/** New installs start in English. Defer onboarding until an interactive session. */
+export async function loadOrCreateSettings(path: string, _env: NodeJS.ProcessEnv = process.env): Promise<{ settings: Settings; firstRun: boolean }> {
   try {
     return { settings: parseSettings(JSON.parse(await readFile(path, "utf8"))), firstRun: false };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-    const settings = defaultsForLocale(env);
+    const settings = { ...DEFAULTS, onboardingPending: true };
     await saveSettings(path, settings);
     return { settings, firstRun: true };
   }
