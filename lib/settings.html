@@ -1,422 +1,192 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>pi-jev-reply Settings</title>
-  <style>
-    :root {
-      color-scheme: light dark;
-      --background: light-dark(#f4f3ef, #141614);
-      --foreground: light-dark(#1f241f, #eceee8);
-      --surface: light-dark(#fffcf7, #1d211d);
-      --muted: light-dark(#667066, #a8b0a4);
-      --border: light-dark(#e2ddd4, #3a4038);
-      --accent: light-dark(#2f5a3e, #b7d4b0);
-      --destructive: light-dark(#a52c26, #ffafa5);
-      --ring: var(--accent);
-      --text-sm: .875rem;
-      --text-base: 1rem;
-      --text-lg: 2.25rem;
-      --radius: 8px;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--background);
-      color: var(--foreground);
-      font: var(--text-base)/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
-    }
-    main {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 36px 20px 64px;
-    }
-    header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-    h1 {
-      font: italic 400 var(--text-lg)/1.08 "Didot", "Bodoni 72", "Iowan Old Style", "Songti SC", "STSong", serif;
-      letter-spacing: .02em;
-      margin: 0;
-    }
-    .tagline {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: var(--text-sm);
-    }
-    nav {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    button {
-      font: inherit;
-      color: inherit;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 8px 14px;
-      cursor: pointer;
-    }
-    button:disabled {
-      opacity: .4;
-      cursor: not-allowed;
-    }
-    nav button {
-      font-size: var(--text-sm);
-      padding: 4px 10px;
-    }
-    nav button[aria-pressed="true"] {
-      border-color: var(--accent);
-      color: var(--accent);
-      font-weight: 600;
-    }
-    :focus-visible {
-      outline: 2px solid var(--ring);
-      outline-offset: 2px;
-    }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 16px;
-      font-size: var(--text-sm);
-    }
-    .card p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-    .key-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .key-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      font-size: 11px;
-      font-weight: 700;
-      line-height: 1;
-      flex-shrink: 0;
-    }
-    .key-badge.ok {
-      background: var(--accent);
-      color: light-dark(#ffffff, #141614);
-    }
-    .key-badge.missing {
-      background: var(--destructive);
-      color: light-dark(#ffffff, #141614);
-    }
-    .status-bar {
-      margin: 0 0 20px;
-      min-height: 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: var(--text-sm);
-      flex-wrap: wrap;
-    }
-    #status {
-      font-weight: 500;
-      color: var(--accent);
-    }
-    #status.error {
-      color: var(--destructive);
-    }
-    #retryBtn {
-      padding: 3px 8px;
-      font-size: var(--text-sm);
-    }
-    fieldset {
-      border: none;
-      margin: 0;
-      padding: 0;
-    }
-    fieldset:disabled {
-      opacity: .6;
-      pointer-events: none;
-    }
-    .stack {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    label {
-      font-size: var(--text-sm);
-      font-weight: 600;
-    }
-    .checkbox-label {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      cursor: pointer;
-      font-weight: 400;
-    }
-    .checkbox-label input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      margin: 2px 0 0;
-      accent-color: var(--accent);
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-    .label-text {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .label-title {
-      font-weight: 600;
-      font-size: var(--text-sm);
-    }
-    .label-desc {
-      font-size: var(--text-sm);
-      color: var(--muted);
-    }
-    input[type="text"], input[type="number"], select, textarea {
-      font: inherit;
-      font-size: var(--text-sm);
-      color: var(--foreground);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 8px 12px;
-      width: 100%;
-    }
-    input::placeholder, textarea::placeholder {
-      color: var(--muted);
-      opacity: .8;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 84px;
-    }
-    .field-hint {
-      margin: 2px 0 0;
-      font-size: var(--text-sm);
-      color: var(--muted);
-    }
-    details {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--surface);
-      padding: 12px 16px;
-      margin-top: 8px;
-    }
-    summary {
-      cursor: pointer;
-      font-weight: 600;
-      font-size: var(--text-sm);
-      color: var(--foreground);
-    }
-    .details-body {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      padding-top: 14px;
-    }
-    .actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-      flex-wrap: wrap;
-    }
-    .btn-primary {
-      background: var(--accent);
-      color: light-dark(#ffffff, #141614);
-      border-color: var(--accent);
-      font-weight: 600;
-    }
-    [hidden] {
-      display: none !important;
-    }
-    summary {
-      cursor: pointer;
-      min-height: 24px;
-    }
-    @media (max-width: 450px) {
-      h1 { font-size: 1.85rem; }
-      main { padding: 24px 14px 48px; }
-    }
-  </style>
-</head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>pi-jev-reply settings</title>
+<style>
+:root{--background:#f3f0e8;--foreground:#252b26;--primary:#294e3f;--muted:#64685f;--destructive:#914b3b;--border:#cccbbf;--ring:#294e3f;--paper:#fffdf7;--radius-sm:3px;--backdrop:#252b2666;--serif:'Didot','Baskerville','Songti SC',serif;--sans:'Avenir Next','Helvetica Neue','PingFang SC',sans-serif;--mono:'SFMono-Regular',monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--background);color:var(--foreground);font:16px/1.5 var(--sans)}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ring);outline-offset:4px}
+button{touch-action:manipulation;cursor:pointer;min-height:44px;border:1px solid var(--border);background:transparent;padding:8px 16px;border-radius:var(--radius-sm)}
+button.primary,.language-bar button[aria-pressed=true]{background:var(--primary);color:var(--paper);border-color:var(--primary)}
+button:disabled{opacity:.5;cursor:default}
+p{margin:0}
+.shell{max-width:832px;margin:auto;padding:24px 24px 32px}
+.language-bar{display:flex;justify-content:space-between;align-items:center;gap:16px;font-size:14px}
+.language-bar div{display:flex;gap:4px}
+.language-bar button{padding:8px 12px}
+header{padding:24px 0 32px}
+h1{font:400 32px/1.25 var(--serif);margin:0}
+.settings{min-width:0}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+#settingsFields:disabled{opacity:.6}
+.section{padding-bottom:32px;margin-bottom:32px;border-bottom:1px solid var(--border)}
+h2{font:400 24px/1.3 var(--serif);margin:0 0 24px}
+.check{display:flex;gap:16px;align-items:flex-start;margin-bottom:24px;cursor:pointer}
+.check:last-child{margin-bottom:0}
+.check input{flex:none;width:24px;height:24px;margin:0;accent-color:var(--primary)}
+.check strong{display:block;font-weight:500}
+.check small{display:block;color:var(--muted);font-size:14px;line-height:1.6;margin-top:4px}
+.field{margin-top:24px}
+.field>label{display:block;margin-bottom:8px;font-size:14px}
+input[type=text],input[type=number],textarea{width:100%;min-width:0;min-height:44px;border:1px solid var(--border);background:var(--paper);border-radius:var(--radius-sm);padding:12px}
+textarea{resize:vertical;min-height:152px;font-size:14px;line-height:1.6;max-width:100%}
+.hint{font-size:14px;color:var(--muted);margin-top:8px}
+.count{text-align:right;font:14px/1.6 var(--mono);color:var(--muted);margin-top:8px}
+summary{cursor:pointer;min-height:44px;font-weight:500}
+details .field:first-child{margin-top:8px}
+.advanced-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.key-note{margin-top:24px;font-size:14px;color:var(--muted)}
+#keyHelp{margin-top:8px}
+#currentModel,.key-note,.save-info{overflow-wrap:anywhere}
+.savebar{border-top:1px solid var(--border);margin-top:32px;padding-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:16px}
+.save-info{min-width:0}
+.save-info strong{font-weight:500}
+.save-info p{font-size:14px;color:var(--muted);margin-top:8px}
+.actions{display:flex;gap:12px;flex-wrap:wrap}
+.error{color:var(--destructive)}
+#retry,#reload{margin-top:8px;font-size:14px}
+dialog{width:min(440px,calc(100% - 32px));border:1px solid var(--border);padding:32px;background:var(--paper);color:var(--foreground)}
+dialog::backdrop{background:var(--backdrop)}
+dialog .actions{margin-top:24px;justify-content:flex-end}
+[hidden]{display:none!important}
+@media(hover:hover) and (pointer:fine){button:hover{border-color:var(--primary)}}
+@media(max-width:600px){.shell{padding:16px 16px 32px}.language-bar{flex-wrap:wrap}.advanced-grid{grid-template-columns:1fr}}
+</style></head>
 <body>
+<div class="shell">
+<nav class="language-bar" aria-label="Interface language">
+<span data-en="Interface language" data-zh="界面语言">Interface language</span>
+<div>
+<button id="lang-en" type="button" aria-pressed="true">English</button>
+<button id="lang-zh" type="button" aria-pressed="false">简体中文</button>
+</div>
+</nav>
+<header>
+<h1 data-en="pi-jev-reply settings" data-zh="pi-jev-reply 设置">pi-jev-reply settings</h1>
+</header>
 <main>
-  <header>
-    <div>
-      <h1 id="mainTitle">pi-jev-reply</h1>
-      <p class="tagline" id="tagline"></p>
-    </div>
-    <nav aria-label="Language">
-      <button type="button" id="lang-en" aria-pressed="true">EN</button>
-      <button type="button" id="lang-zh" aria-pressed="false">中文</button>
-    </nav>
-  </header>
+<form id="settings" class="settings" novalidate>
+<fieldset id="settingsFields" disabled>
+<section class="section">
+<h2 data-en="Reply processing" data-zh="回复处理">Reply processing</h2>
+<label class="check">
+<input id="enabled" type="checkbox">
+<span>
+<strong data-zh="启用回复处理" data-en="Enable reply processing">Enable reply processing</strong>
+<small data-zh="发送回复前进行审核和处理。" data-en="Review and process replies before delivery.">Review and process replies before delivery.</small>
+</span>
+</label>
+<label class="check">
+<input id="rewrite" type="checkbox">
+<span>
+<strong data-zh="启用改写" data-en="Enable rewriting">Enable rewriting</strong>
+<small data-zh="含糊程度达到阈值时，调用所选模型。" data-en="Use the selected model when unclear wording reaches the threshold.">Use the selected model when unclear wording reaches the threshold.</small>
+</span>
+</label>
+<label class="check">
+<input id="visuals" type="checkbox">
+<span>
+<strong data-zh="启用可视化建议" data-en="Suggest visuals">Suggest visuals</strong>
+<small data-zh="建议图表与结构化表达，不为装饰而配图。" data-en="Suggest diagrams, charts and structured tables.">Suggest diagrams, charts and structured tables.</small>
+</span>
+</label>
+<label class="check">
+<input id="hideDraft" type="checkbox">
+<span>
+<strong data-zh="隐藏流式草稿" data-en="Hide streaming drafts">Hide streaming drafts</strong>
+<small data-zh="隐藏 Pi 原生流式草稿；自定义对话界面可能不同。" data-en="Hide drafts in native Pi; custom transcript views may differ.">Hide drafts in native Pi; custom transcript views may differ.</small>
+</span>
+</label>
+</section>
+<section class="section">
+<h2 data-en="Rewrite settings" data-zh="改写设置">Rewrite settings</h2>
+<div class="field">
+<label for="rewriteModel" data-zh="改写模型" data-en="Rewrite model">Rewrite model</label>
+<input id="rewriteModel" type="text" list="models" maxlength="256" autocomplete="off" aria-describedby="currentModel modelHint">
+<datalist id="models">
+</datalist>
+<p id="currentModel" class="hint">
+</p>
+<p id="modelHint" class="hint" data-zh="留空跟随当前模型；可输入 Pi 中已配置的 provider/model。" data-en="Leave blank to follow the current model, or enter a provider/model configured in Pi.">Leave blank to follow the current model, or enter a provider/model configured in Pi.</p>
+</div>
+<div class="field">
+<label for="instructions" data-zh="改写指令" data-en="Rewrite instructions">Rewrite instructions</label>
+<textarea id="instructions" maxlength="2000" aria-describedby="instructionHint count"></textarea>
+<p id="instructionHint" class="hint" data-zh="设置改写使用的语气、措辞和格式。" data-en="Set the tone, wording and format for rewrites.">Set the tone, wording and format for rewrites.</p>
+<p class="count" id="count">0 / 2000</p>
+</div>
+</section>
+<section>
+<details>
+<summary data-zh="高级设置" data-en="Advanced settings">Advanced settings</summary>
+<div class="advanced-grid">
+<div class="field">
+<label for="rewriteThreshold" data-zh="改写阈值 · 0–1" data-en="Rewrite threshold · 0–1">Rewrite threshold · 0–1</label>
+<input id="rewriteThreshold" type="number" min="0" max="1" step="any" required>
+</div>
+<div class="field">
+<label for="visualThreshold" data-zh="可视化阈值 · 0–1" data-en="Visual threshold · 0–1">Visual threshold · 0–1</label>
+<input id="visualThreshold" type="number" min="0" max="1" step="any" required>
+</div>
+</div>
+<p class="hint" data-zh="含糊得分 ≥ 改写阈值时改写；可视化机会得分 > 阈值时建议配图。" data-en="Rewrite at or above the unclear-wording threshold; suggest visuals above the opportunity threshold.">Rewrite at or above the unclear-wording threshold; suggest visuals above the opportunity threshold.</p>
+<div class="field">
+<label for="jevModel" data-zh="Jev 审核模型" data-en="Jev review model">Jev review model</label>
+<input id="jevModel" type="text" maxlength="80" pattern="[a-zA-Z0-9_.-]+" required>
+</div>
+<div class="field">
+<label for="reviewTimeoutMs" data-zh="审核超时 · 毫秒（1000–30000）" data-en="Review timeout · ms (1000–30000)">Review timeout · ms (1000–30000)</label>
+<input id="reviewTimeoutMs" type="number" min="1000" max="30000" step="1" required>
+</div>
+<div class="field">
+<label for="rewriteTimeoutMs" data-zh="改写超时 · 毫秒（1000–120000）" data-en="Rewrite timeout · ms (1000–120000)">Rewrite timeout · ms (1000–120000)</label>
+<input id="rewriteTimeoutMs" type="number" min="1000" max="120000" step="1" required>
+</div>
+<div class="field">
+<label for="settingsIdleMinutes" data-zh="设置页空闲超时 · 分钟（1–60）" data-en="Settings idle timeout · min (1–60)">Settings idle timeout · min (1–60)</label>
+<input id="settingsIdleMinutes" type="number" min="1" max="60" step="1" required>
+<p class="hint" data-zh="没有设置请求时关闭服务；页面不做后台轮询。" data-en="Stop the settings service after inactivity; this page does not poll.">Stop the settings service after inactivity; this page does not poll.</p>
+</div>
+</details>
+<div class="key-note">
+<strong id="keyStatus">
+</strong>
+<p id="keyHelp">
+</p>
+<p id="privacy" class="hint">
+</p>
+</div>
+</section>
+</fieldset>
+</form>
 
-  <div class="status-bar" role="status" aria-live="polite">
-    <span id="status"></span>
-    <button type="button" id="retryBtn" hidden></button>
-  </div>
-
-  <section class="card" id="key-card">
-    <div class="key-header">
-      <span class="key-badge ok" id="key-badge">✓</span>
-      <strong id="key-status-text"></strong>
-    </div>
-    <p id="key-help-text"></p>
-  </section>
-
-  <section class="card" id="privacy-card">
-    <p id="privacy-text"></p>
-  </section>
-
-  <details class="card" open>
-    <summary id="settingsSummary"></summary>
-  <form id="settings-form">
-    <fieldset id="fieldset" disabled>
-      <div class="stack">
-        <label class="checkbox-label" for="field-enabled">
-          <input type="checkbox" id="field-enabled">
-          <span class="label-text">
-            <span class="label-title" id="labelEnabled"></span>
-            <span class="label-desc" id="descEnabled"></span>
-          </span>
-        </label>
-
-        <div class="field">
-          <label for="field-language" id="labelLanguage"></label>
-          <select id="field-language">
-            <option value="en">English</option>
-            <option value="zh-CN">简体中文 (zh-CN)</option>
-          </select>
-        </div>
-
-        <label class="checkbox-label" for="field-rewrite">
-          <input type="checkbox" id="field-rewrite">
-          <span class="label-text">
-            <span class="label-title" id="labelRewrite"></span>
-            <span class="label-desc" id="descRewrite"></span>
-          </span>
-        </label>
-
-        <div class="field">
-          <label for="field-rewriteModel" id="labelRewriteModel"></label>
-          <input type="text" id="field-rewriteModel" list="models-datalist" autocomplete="off" maxlength="256">
-          <datalist id="models-datalist"></datalist>
-          <p class="field-hint"><span id="current-model-info"></span></p>
-        </div>
-
-        <label class="checkbox-label" for="field-visuals">
-          <input type="checkbox" id="field-visuals">
-          <span class="label-text">
-            <span class="label-title" id="labelVisuals"></span>
-            <span class="label-desc" id="descVisuals"></span>
-          </span>
-        </label>
-
-        <label class="checkbox-label" for="field-hideDraft">
-          <input type="checkbox" id="field-hideDraft">
-          <span class="label-text">
-            <span class="label-title" id="labelHideDraft"></span>
-            <span class="label-desc" id="descHideDraft"></span>
-          </span>
-        </label>
-
-        <div class="field">
-          <label for="field-instructions" id="labelInstructions"></label>
-          <textarea id="field-instructions" rows="4" maxlength="2000"></textarea>
-          <p class="field-hint" style="display:flex;justify-content:flex-end;"><span><span id="char-count">0</span> / 2000</span></p>
-        </div>
-
-        <details id="advanced-details" open>
-          <summary id="advancedSummary"></summary>
-          <div class="details-body">
-            <div class="field">
-              <label for="field-rewriteThreshold" id="labelRewriteThreshold"></label>
-              <input type="number" id="field-rewriteThreshold" min="0" max="1" step="any" required>
-              <p class="field-hint" id="descRewriteThreshold"></p>
-            </div>
-
-            <div class="field">
-              <label for="field-visualThreshold" id="labelVisualThreshold"></label>
-              <input type="number" id="field-visualThreshold" min="0" max="1" step="any" required>
-              <p class="field-hint" id="descVisualThreshold"></p>
-            </div>
-
-            <div class="field">
-              <label for="field-jevModel" id="labelJevModel"></label>
-              <input type="text" id="field-jevModel" maxlength="80" pattern="[a-zA-Z0-9_.-]+" required>
-            </div>
-
-            <div class="field">
-              <label for="field-reviewTimeoutMs" id="labelReviewTimeoutMs"></label>
-              <input type="number" id="field-reviewTimeoutMs" min="1000" max="30000" step="1" required>
-              <p class="field-hint" id="descReviewTimeoutMs"></p>
-            </div>
-
-            <div class="field">
-              <label for="field-rewriteTimeoutMs" id="labelRewriteTimeoutMs"></label>
-              <input type="number" id="field-rewriteTimeoutMs" min="1000" max="120000" step="1" required>
-              <p class="field-hint" id="descRewriteTimeoutMs"></p>
-            </div>
-
-            <div class="field">
-              <label for="field-settingsIdleMinutes" id="labelSettingsIdleMinutes"></label>
-              <input type="number" id="field-settingsIdleMinutes" min="1" max="60" step="1" required>
-              <p class="field-hint" id="descSettingsIdleMinutes"></p>
-            </div>
-          </div>
-        </details>
-      </div>
-
-      <div class="actions">
-        <button type="submit" id="saveBtn" class="btn-primary"></button>
-        <button type="button" id="defaultsBtn"></button>
-      </div>
-    </fieldset>
-  </form>
-  </details>
 </main>
+<div class="savebar">
+<div class="save-info">
+<strong id="status" role="status" aria-live="polite">Loading settings…</strong>
+<button id="retry" type="button" hidden>Retry</button>
+<button id="reload" type="button" hidden>Reload settings</button>
+<p data-zh="修改仅在保存后生效。界面语言也会切换默认润色指令；自定义文字会保留。" data-en="Changes take effect after saving. Changing language updates preset rewrite instructions; custom instructions are preserved.">Changes take effect after saving. Changing language updates preset rewrite instructions; custom instructions are preserved.</p>
+</div>
+<div class="actions">
+<button id="reset" disabled type="button" data-zh="恢复默认" data-en="Reset defaults">Reset defaults</button>
+<button id="save" disabled form="settings" type="submit" class="primary" data-zh="保存设置" data-en="Save settings">Save settings</button>
+</div>
+</div>
+
+</div>
+<dialog id="resetDialog" aria-labelledby="resetTitle">
+<h2 id="resetTitle" data-zh="恢复默认设置？" data-en="Restore default settings?">Restore default settings?</h2>
+<p data-zh="恢复默认设置，并保留当前界面语言。修改仍需保存。" data-en="Restore defaults and keep your interface language. Save to apply the change.">Restore defaults and keep your interface language. Save to apply the change.</p>
+<div class="actions">
+<button id="cancelReset" type="button" autofocus data-zh="取消" data-en="Cancel">Cancel</button>
+<button id="confirmReset" type="button" class="primary" data-zh="确认恢复" data-en="Restore defaults">Restore defaults</button>
+</div>
+</dialog>
 
 <script>
-// ponytail: In-memory form submission without client delta calculation; sends full settings object. Ceiling: single local settings page. Upgrade path: add dirty-tracking and PATCH endpoint if payload grows.
-
-const $ = (id) => document.getElementById(id);
-const token = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
-if (location.hash) {
-  history.replaceState(null, '', location.pathname + location.search);
-}
-
 const I18N = {
-  documentTitle: {
-    en: 'pi-jev-reply Settings',
-    'zh-CN': 'pi-jev-reply 设置'
-  },
-  mainTitle: {
-    en: 'pi-jev-reply',
-    'zh-CN': 'pi-jev-reply'
-  },
-  tagline: {
-    en: 'Clear replies, with a diagram when it helps',
-    'zh-CN': '把回复说清楚，必要时配图'
-  },
   keyConfigured: {
     en: 'Typesafe API Key: Configured',
     'zh-CN': 'Typesafe API 密钥：已配置'
@@ -433,46 +203,6 @@ const I18N = {
     en: 'Privacy note: If a Jev key is configured, Jev receives reply drafts to evaluate clarity and structure. Without a key, the current model or other handles the pass. Optional rewrite uses the selected model only when triggered.',
     'zh-CN': '隐私说明：配置了 Jev 密钥时，审核服务会接收回复草稿以评估清晰度与结构。未配置则由当前主模型或 other 处理。可选改写仅在触发时使用所选模型。'
   },
-  labelEnabled: {
-    en: 'Enable pi-jev-reply',
-    'zh-CN': '启用 pi-jev-reply'
-  },
-  descEnabled: {
-    en: 'Review drafts and improve response clarity',
-    'zh-CN': '审核草稿并提升回复清晰度'
-  },
-  labelLanguage: {
-    en: 'Settings language',
-    'zh-CN': '设置界面语言'
-  },
-  labelRewrite: {
-    en: 'Enable AI Rewrite',
-    'zh-CN': '启用智能改写'
-  },
-  descRewrite: {
-    en: 'Rewrite when the unclear-wording score reaches the threshold',
-    'zh-CN': '当回复清晰度不足时自动调用模型改写'
-  },
-  labelVisuals: {
-    en: 'Enable Visuals',
-    'zh-CN': '启用可视化建议'
-  },
-  descVisuals: {
-    en: 'Suggest diagrams, charts, and tables when helpful',
-    'zh-CN': '在适当时建议图表、流程图和结构化表格'
-  },
-  labelHideDraft: {
-    en: 'Hide streaming drafts',
-    'zh-CN': '隐藏流式草稿'
-  },
-  descHideDraft: {
-    en: 'Show native Pi replies only after review; custom transcript views may differ',
-    'zh-CN': 'Pi 原生界面在检查后显示回复；自定义对话界面可能不适用'
-  },
-  labelRewriteModel: {
-    en: 'Rewrite Model',
-    'zh-CN': '改写模型'
-  },
   placeholderRewriteModel: {
     en: 'Current main model',
     'zh-CN': '当前主模型'
@@ -481,14 +211,6 @@ const I18N = {
     en: 'Current main model: ',
     'zh-CN': '当前主模型：'
   },
-  unknownModel: {
-    en: 'default',
-    'zh-CN': '默认'
-  },
-  labelInstructions: {
-    en: 'Custom Instructions (max 2,000 chars)',
-    'zh-CN': '自定义改写指令（最多 2,000 字）'
-  },
   placeholderInstructions: {
     en: 'Additional instructions for tone, style, or specific formatting rules…',
     'zh-CN': '针对语气、风格或特定排版格式的补充指令…'
@@ -496,66 +218,6 @@ const I18N = {
   defaultInstructions: {
     en: '英文润色。Rewrite in concrete, plain English so what changed, the outcome, and the limits are obvious. Drop unnecessary jargon instead of only expanding abbreviations. Keep every fact, number, path, command, and code identifier; do not invent or add recommendations. Stay concise.',
     'zh-CN': '中文润色。用具体、直白的中文写清改了什么、结果和限制；去掉不必要的黑话，不要只展开缩写。保留全部事实、数字、路径、命令和代码标识；不编造、不加建议；保持简洁。'
-  },
-  advancedSummary: {
-    en: 'Advanced Options',
-    'zh-CN': '高级选项'
-  },
-  settingsSummary: {
-    en: 'Settings (expanded by default; plugin stays on)',
-    'zh-CN': '设置（默认展开，插件默认开启）'
-  },
-  labelRewriteThreshold: {
-    en: 'Rewrite Threshold (0..1)',
-    'zh-CN': '改写阈值 (0..1)'
-  },
-  descRewriteThreshold: {
-    en: 'Unclear-wording score at or above this triggers rewrite (default 0.70)',
-    'zh-CN': '含糊程度得分达到此阈值时触发改写（默认 0.70）'
-  },
-  labelVisualThreshold: {
-    en: 'Visual Threshold (0..1)',
-    'zh-CN': '可视化阈值 (0..1)'
-  },
-  descVisualThreshold: {
-    en: 'Opportunity score above this suggests visuals (default 0.75)',
-    'zh-CN': '可视化机会得分高于此阈值时推荐视觉元素（默认 0.75）'
-  },
-  labelJevModel: {
-    en: 'Jev Review Model',
-    'zh-CN': 'Jev 审核模型'
-  },
-  labelReviewTimeoutMs: {
-    en: 'Review Timeout (ms)',
-    'zh-CN': '审核超时（毫秒）'
-  },
-  descReviewTimeoutMs: {
-    en: 'Range: 1,000 – 30,000 ms',
-    'zh-CN': '允许范围：1,000 – 30,000 毫秒'
-  },
-  labelRewriteTimeoutMs: {
-    en: 'Rewrite Timeout (ms)',
-    'zh-CN': '改写超时（毫秒）'
-  },
-  descRewriteTimeoutMs: {
-    en: 'Range: 1,000 – 120,000 ms',
-    'zh-CN': '允许范围：1,000 – 120,000 毫秒'
-  },
-  labelSettingsIdleMinutes: {
-    en: 'Settings Idle Timeout (minutes)',
-    'zh-CN': '设置页面空闲超时（分钟）'
-  },
-  descSettingsIdleMinutes: {
-    en: 'Stops after no settings requests for this long (1–60 min); no background polling',
-    'zh-CN': '此时长内没有设置请求则关闭（1–60 分钟）；不做后台轮询'
-  },
-  saveBtn: {
-    en: 'Save Settings',
-    'zh-CN': '保存设置'
-  },
-  defaultsBtn: {
-    en: 'Reset Defaults',
-    'zh-CN': '恢复默认'
   },
   retryBtn: {
     en: 'Retry',
@@ -577,17 +239,9 @@ const I18N = {
     en: 'Settings saved',
     'zh-CN': '设置已保存'
   },
-  saveFailed: {
-    en: 'Failed to save: ',
-    'zh-CN': '保存失败：'
-  },
   defaultsRestored: {
     en: 'Defaults restored in form (unsaved)',
     'zh-CN': '已恢复默认值（待保存）'
-  },
-  confirmReset: {
-    en: 'Reset form to default values? You will still need to click Save.',
-    'zh-CN': '是否恢复表单中的默认设置？需点击保存后才会生效。'
   },
   invalidSettings: {
     en: 'Check the settings values and configured model name.',
@@ -610,90 +264,6 @@ const I18N = {
     'zh-CN': '连接已断开。设置服务在空闲超时后自动退出；请在 Pi 中重新执行 /clear-reply settings。'
   }
 };
-
-let currentLang = 'en';
-let serverData = null;
-let isSaving = false;
-let retryAction = null;
-let version = '';
-
-const t = (key, fallback = '') => I18N[key]?.[currentLang] ?? fallback;
-
-function setStatus(text, isError = false) {
-  const el = $('status');
-  el.textContent = text;
-  el.className = isError ? 'error' : '';
-}
-
-function updateCharCount() {
-  $('char-count').textContent = String($('field-instructions').value.length);
-}
-
-function updateKeyDisplay() {
-  const ok = !!serverData?.keyAvailable;
-  const badge = $('key-badge');
-  badge.textContent = ok ? '✓' : '!';
-  badge.className = 'key-badge ' + (ok ? 'ok' : 'missing');
-  $('key-status-text').textContent = t(ok ? 'keyConfigured' : 'keyMissing');
-  $('key-help-text').textContent = t('keyHelp');
-}
-
-function updateCurrentModelDisplay() {
-  const name = serverData?.currentModel || t('unknownModel');
-  $('current-model-info').textContent = t('currentModelPrefix') + name;
-}
-
-function updateModels(models) {
-  const dl = $('models-datalist');
-  dl.replaceChildren();
-  if (!Array.isArray(models)) return;
-  for (const m of models) {
-    const opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = m.label || m.id;
-    dl.appendChild(opt);
-  }
-}
-
-function applyLang() {
-  document.documentElement.lang = currentLang;
-  document.title = t('documentTitle');
-  document.querySelector('nav').setAttribute('aria-label', currentLang === 'zh-CN' ? '界面语言' : 'Interface language');
-
-  const textIds = [
-    'mainTitle', 'tagline',
-    'settingsSummary',
-    'labelEnabled', 'descEnabled',
-    'labelLanguage',
-    'labelRewrite', 'descRewrite',
-    'labelVisuals', 'descVisuals',
-    'labelHideDraft', 'descHideDraft',
-    'labelRewriteModel',
-    'labelInstructions',
-    'advancedSummary',
-    'labelRewriteThreshold', 'descRewriteThreshold',
-    'labelVisualThreshold', 'descVisualThreshold',
-    'labelJevModel',
-    'labelReviewTimeoutMs', 'descReviewTimeoutMs',
-    'labelRewriteTimeoutMs', 'descRewriteTimeoutMs',
-    'labelSettingsIdleMinutes', 'descSettingsIdleMinutes',
-    'saveBtn', 'defaultsBtn', 'retryBtn'
-  ];
-  for (const id of textIds) {
-    const el = $(id);
-    if (el) el.textContent = t(id);
-  }
-
-  $('field-rewriteModel').placeholder = t('placeholderRewriteModel');
-  $('field-instructions').placeholder = t('placeholderInstructions');
-  $('privacy-text').textContent = t('privacyText');
-  $('lang-en').setAttribute('aria-pressed', String(currentLang === 'en'));
-  $('lang-zh').setAttribute('aria-pressed', String(currentLang === 'zh-CN'));
-  $('field-language').value = currentLang;
-
-  updateKeyDisplay();
-  updateCurrentModelDisplay();
-}
 
 function presetInstructions(lang) {
   return I18N.defaultInstructions[lang === 'zh-CN' ? 'zh-CN' : 'en'];
@@ -718,152 +288,170 @@ function retargetInstructionLanguage(text, lang) {
   return text;
 }
 
-function switchLang(lang) {
-  if (isSaving) return;
-  currentLang = (lang === 'zh-CN' || lang === 'zh') ? 'zh-CN' : 'en';
-  applyLang();
-  $('field-instructions').value = retargetInstructionLanguage($('field-instructions').value, currentLang);
-  updateCharCount();
-}
 
-function populateForm(s) {
-  if (!s) return;
-  $('field-enabled').checked = s.enabled !== false;
-  $('field-language').value = s.language === 'zh-CN' ? 'zh-CN' : 'en';
-  $('field-rewriteModel').value = s.rewriteModel || '';
-  $('field-rewrite').checked = s.rewrite !== false;
-  $('field-visuals').checked = s.visuals !== false;
-  $('field-hideDraft').checked = s.hideDraft !== false;
-  $('field-rewriteThreshold').value = typeof s.rewriteThreshold === 'number' ? s.rewriteThreshold : 0.7;
-  $('field-visualThreshold').value = typeof s.visualThreshold === 'number' ? s.visualThreshold : 0.75;
-  $('field-jevModel').value = s.jevModel || 'jev-latest';
-  $('field-reviewTimeoutMs').value = typeof s.reviewTimeoutMs === 'number' ? s.reviewTimeoutMs : 5000;
-  $('field-rewriteTimeoutMs').value = typeof s.rewriteTimeoutMs === 'number' ? s.rewriteTimeoutMs : 30000;
-  $('field-settingsIdleMinutes').value = typeof s.settingsIdleMinutes === 'number' ? s.settingsIdleMinutes : 5;
-  $('field-instructions').value = s.instructions?.trim() ? s.instructions : presetInstructions(s.language === 'zh-CN' ? 'zh-CN' : 'en');
-  updateCharCount();
-}
-
-function getFormData() {
-  return {
-    enabled: $('field-enabled').checked,
-    language: $('field-language').value,
-    rewriteModel: $('field-rewriteModel').value.trim(),
-    rewrite: $('field-rewrite').checked,
-    visuals: $('field-visuals').checked,
-    hideDraft: $('field-hideDraft').checked,
-    rewriteThreshold: Number($('field-rewriteThreshold').value),
-    visualThreshold: Number($('field-visualThreshold').value),
-    jevModel: $('field-jevModel').value.trim(),
-    reviewTimeoutMs: parseInt($('field-reviewTimeoutMs').value, 10),
-    rewriteTimeoutMs: parseInt($('field-rewriteTimeoutMs').value, 10),
-    settingsIdleMinutes: parseInt($('field-settingsIdleMinutes').value, 10),
-    instructions: $('field-instructions').value
-  };
-}
-
-async function apiRequest(method, body) {
-  const headers = { 'Authorization': 'Bearer ' + token };
-  if (body !== undefined) {
-    headers['Content-Type'] = 'application/json';
-    headers['If-Match'] = version;
-  }
-  const res = await fetch('/settings', {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined
-  });
-  if (!res.ok) {
-    let msg = '';
-    try { msg = await res.text(); } catch {}
-    const error = new Error(msg || `${res.status} ${res.statusText}`);
-    error.status = res.status;
-    throw error;
-  }
-  version = res.headers.get('ETag') || '';
-  return res.json();
-}
-
-async function loadSettings() {
-  setStatus(t('loading'));
-  $('retryBtn').hidden = true;
-  $('fieldset').disabled = true;
-  try {
-    const data = await apiRequest('GET');
-    serverData = data;
-    if (data.settings?.language) {
-      currentLang = data.settings.language === 'zh-CN' ? 'zh-CN' : 'en';
-        }
-    applyLang();
-    populateForm(data.settings);
-    updateModels(data.models);
-    $('fieldset').disabled = !!data.settingsError;
-    setStatus(t(data.settingsError ? 'settingsError' : 'ready'), !!data.settingsError);
-  } catch (err) {
-    setStatus(t('networkError'), true);
-    $('retryBtn').hidden = false;
-    retryAction = loadSettings;
-  }
-}
-
-async function saveSettings(e) {
-  if (e) e.preventDefault();
-  const form = $('settings-form');
-  if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
-  }
-  if (isSaving) return;
-  isSaving = true;
-  $('fieldset').disabled = true;
-  $('retryBtn').hidden = true;
-  setStatus(t('saving'));
-
-  const payload = getFormData();
-  try {
-    const res = await apiRequest('PUT', payload);
-    if (res?.settings) {
-      serverData.settings = res.settings;
-    }
-    if (payload.language && payload.language !== currentLang) {
-      switchLang(payload.language);
-    }
-    setStatus(t('saved'));
-  } catch (err) {
-    // Unsaved values retained in form DOM
-    setStatus(err.status === 409 ? t('conflict') : t('saveFailed') + (err.status === 400 ? t('invalidSettings') : err.status ? t('serverError') : t('networkError')), true);
-    $('retryBtn').hidden = err.status === 409;
-    retryAction = () => saveSettings();
-  } finally {
-    isSaving = false;
-    $('fieldset').disabled = false;
-  }
-}
-
-// Event Listeners
-$('lang-en').addEventListener('click', () => switchLang('en'));
-$('lang-zh').addEventListener('click', () => switchLang('zh-CN'));
-$('field-language').addEventListener('change', () => switchLang($('field-language').value));
-$('field-instructions').addEventListener('input', updateCharCount);
-$('settings-form').addEventListener('submit', saveSettings);
-
-$('defaultsBtn').addEventListener('click', () => {
-  if (!serverData?.defaults) return;
-  if (!confirm(t('confirmReset'))) return;
-  populateForm({ ...serverData.defaults, language: currentLang, instructions: presetInstructions(currentLang) });
-  setStatus(t('defaultsRestored'));
+const $ = id => document.getElementById(id);
+const token = location.hash.slice(1);
+if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+let currentLang = 'en', snapshot = null, version = '', baseline = '', busy = false, conflict = false;
+let notice = 'loading', retryAction = null;
+const fields = ['enabled', 'rewrite', 'visuals', 'hideDraft', 'rewriteModel', 'instructions', 'rewriteThreshold', 'visualThreshold', 'jevModel', 'reviewTimeoutMs', 'rewriteTimeoutMs', 'settingsIdleMinutes'];
+const numbers = new Set(['rewriteThreshold', 'visualThreshold', 'reviewTimeoutMs', 'rewriteTimeoutMs', 'settingsIdleMinutes']);
+const text = (en, zh) => currentLang === 'en' ? en : zh;
+const t = key => I18N[key]?.[currentLang] || '';
+Object.assign(I18N, {
+  dirty: {en:'Unsaved changes', 'zh-CN':'有未保存的修改'},
+  missingToken: {en:'This page has no access token. Open /pi-jev-reply settings from Pi.', 'zh-CN':'此页缺少访问令牌。请在 Pi 中执行 /pi-jev-reply settings。'},
+  forbidden: {en:'Access expired or denied. Open /pi-jev-reply settings from Pi again.', 'zh-CN':'访问已过期或被拒绝。请在 Pi 中重新执行 /pi-jev-reply settings。'},
+  conflict: {en:'Settings changed elsewhere. Your edits are preserved. Reload explicitly to discard them and get the latest settings.', 'zh-CN':'设置已在别处修改。当前编辑已保留；明确重新加载后才会丢弃编辑并读取最新设置。'},
+  keyPending: {en:'Jev key status unavailable', 'zh-CN':'Jev 密钥状态尚不可用'},
+  keyHelp: {en:'Jev is optional. Without a key, enabled rewriting goes directly to the selected or current model. If neither is available, Pi uses an available fallback. Set TYPESAFE_API_KEY or ~/.config/typesafe/api_key to enable Jev review.', 'zh-CN':'Jev 可选。未配置密钥时，已启用的改写直接使用所选模型或当前模型；两者不可用时会选用可用的备用模型。设置 TYPESAFE_API_KEY 或 ~/.config/typesafe/api_key 可启用 Jev 审核。'},
+  privacyText: {en:'With a key, Jev receives reply drafts for review. When rewriting is triggered, the selected model receives the draft and user request.', 'zh-CN':'配置密钥后，Jev 会接收回复草稿进行审核。触发改写时，所选模型会接收草稿与用户请求。'},
+  networkError: {en:'Connection lost. Your edits are preserved. Retry, or reopen /pi-jev-reply settings from Pi if the service has stopped.', 'zh-CN':'连接已断开，当前编辑已保留。可重试；若服务已停止，请在 Pi 中重新执行 /pi-jev-reply settings。'}
 });
-
-$('retryBtn').addEventListener('click', () => {
-  if (typeof retryAction === 'function') retryAction();
+function read() {
+  const values = { language: currentLang };
+  for (const key of fields) values[key] = $(key).type === 'checkbox' ? $(key).checked : numbers.has(key) ? Number($(key).value) : $(key).value;
+  values.rewriteModel = values.rewriteModel.trim();
+  values.jevModel = values.jevModel.trim();
+  return values;
+}
+function populate(settings) {
+  for (const key of fields) {
+    if ($(key).type === 'checkbox') $(key).checked = settings[key];
+    else $(key).value = settings[key] ?? '';
+  }
+}
+function fingerprint() { return JSON.stringify([read(), ...[...numbers].map(key => $(key).value)]); }
+function dirty() { return !!baseline && fingerprint() !== baseline; }
+function translate() {
+  document.documentElement.lang = currentLang;
+  document.title = text('pi-jev-reply settings', 'pi-jev-reply 设置');
+  document.querySelectorAll('[data-en]').forEach(el => { el.textContent = el.dataset[currentLang === 'en' ? 'en' : 'zh']; });
+  document.querySelector('.language-bar').setAttribute('aria-label', text('Interface language', '界面语言'));
+  $('lang-en').setAttribute('aria-pressed', String(currentLang === 'en'));
+  $('lang-zh').setAttribute('aria-pressed', String(currentLang === 'zh-CN'));
+  $('rewriteModel').placeholder = t('placeholderRewriteModel');
+  $('instructions').placeholder = t('placeholderInstructions');
+  $('currentModel').textContent = t('currentModelPrefix') + (snapshot?.currentModel || text('No current model', '没有当前模型'));
+  if (snapshot && !snapshot.models?.length) $('currentModel').textContent += text(' · No available models reported', ' · 未提供可用模型');
+  $('keyStatus').textContent = t(!snapshot ? 'keyPending' : snapshot.keyAvailable ? 'keyConfigured' : 'keyMissing');
+  $('keyHelp').textContent = t('keyHelp');
+  $('privacy').textContent = t('privacyText');
+  $('retry').textContent = t('retryBtn');
+  $('reload').textContent = text('Reload settings', '重新加载设置');
+}
+function render() {
+  translate();
+  $('count').textContent = $('instructions').value.length + ' / 2000';
+  $('status').textContent = t(notice);
+  $('status').className = ['networkError','conflict','settingsError','invalidSettings','serverError','missingToken','forbidden'].includes(notice) ? 'error' : '';
+  $('settingsFields').disabled = busy || !snapshot || !!snapshot.settingsError;
+  $('save').disabled = busy || !snapshot || !!snapshot.settingsError || conflict || !dirty();
+  $('reset').disabled = busy || !snapshot?.defaults || !!snapshot.settingsError;
+  $('lang-en').disabled = $('lang-zh').disabled = busy;
+  $('retry').hidden = !retryAction;
+  $('retry').disabled = busy;
+  $('reload').hidden = !conflict;
+  $('reload').disabled = busy;
+}
+function updateModels() {
+  $('models').replaceChildren();
+  for (const model of snapshot.models || []) {
+    const option = document.createElement('option');
+    option.value = model.id;
+    option.textContent = model.label || model.id;
+    $('models').append(option);
+  }
+}
+function validate() {
+  for (const key of fields) {
+    const el = $(key);
+    el.setCustomValidity('');
+    if (!el.validity.valid) el.setCustomValidity(text('Check this value and its allowed range.', '请检查此值及其允许范围。'));
+  }
+  const model = $('rewriteModel').value.trim();
+  if (model && !/^[\w.-]+\/\S+$/.test(model)) $('rewriteModel').setCustomValidity(text('Use a configured provider/model identifier.', '请输入已配置的 provider/model 标识。'));
+  if ($('instructions').value.length > 2000) $('instructions').setCustomValidity(text('Use at most 2,000 characters.', '最多输入 2,000 个字符。'));
+  const invalid = fields.map(key => $(key)).find(el => !el.validity.valid);
+  if (invalid) {
+    const details = invalid.closest('details');
+    if (details) details.open = true;
+    notice = 'invalidSettings'; render(); invalid.reportValidity(); return false;
+  }
+  return true;
+}
+async function request(method, payload) {
+  const headers = {Authorization:'Bearer ' + token};
+  if (payload) { headers['Content-Type'] = 'application/json'; headers['If-Match'] = version; }
+  const response = await fetch('/settings', {method, headers, body:payload ? JSON.stringify(payload) : undefined, signal:AbortSignal.timeout(15000)});
+  if (!response.ok) { const error = new Error('Settings request failed'); error.status = response.status; throw error; }
+  const data = await response.json();
+  if (!data.settings) throw new Error('Invalid settings snapshot');
+  return {data, version:response.headers.get('ETag') || ''};
+}
+async function load() {
+  if (busy) return;
+  if (!token) { notice = 'missingToken'; render(); return; }
+  busy = true; notice = 'loading'; retryAction = null; render();
+  try {
+    const result = await request('GET');
+    snapshot = result.data; version = result.version;
+    currentLang = snapshot.settings.language === 'zh-CN' ? 'zh-CN' : 'en';
+    populate(snapshot.settings); updateModels(); baseline = fingerprint(); conflict = false;
+    notice = snapshot.settingsError ? 'settingsError' : 'ready';
+    if (snapshot.settingsError) retryAction = load;
+  } catch (error) { notice = error.status === 403 ? 'forbidden' : 'networkError'; if (error.status !== 403) retryAction = load; }
+  finally { busy = false; render(); }
+}
+async function save(event) {
+  event?.preventDefault();
+  if (busy || !snapshot || snapshot.settingsError || conflict || !dirty() || !validate()) return;
+  const payload = {...snapshot.settings, ...read()};
+  busy = true; notice = 'saving'; retryAction = null; render();
+  try {
+    const result = await request('PUT', payload);
+    snapshot = result.data; version = result.version;
+    populate(snapshot.settings); updateModels(); baseline = fingerprint(); notice = 'saved';
+  } catch (error) {
+    conflict = error.status === 409;
+    notice = conflict ? 'conflict' : error.status === 403 ? 'forbidden' : error.status === 400 ? 'invalidSettings' : error.status ? 'serverError' : 'networkError';
+    // Keep the old ETag after an uncertain save: retry must never overwrite a newer revision.
+    if (!conflict && error.status !== 403) retryAction = save;
+  } finally { busy = false; render(); }
+}
+function switchLanguage(language) {
+  if (busy || currentLang === language) return;
+  currentLang = language;
+  if (snapshot && !snapshot.settingsError) {
+    $('instructions').value = retargetInstructionLanguage($('instructions').value, language);
+    if (!conflict) notice = dirty() ? 'dirty' : 'ready';
+  }
+  for (const key of fields) $(key).setCustomValidity('');
+  render();
+}
+$('lang-en').addEventListener('click', () => switchLanguage('en'));
+$('lang-zh').addEventListener('click', () => switchLanguage('zh-CN'));
+$('settings').addEventListener('input', event => {
+  event.target.setCustomValidity?.('');
+  if (!conflict) notice = dirty() ? 'dirty' : 'ready';
+  render();
 });
+$('settings').addEventListener('submit', save);
+$('retry').addEventListener('click', () => retryAction?.());
+$('reload').addEventListener('click', () => {
+  if (!busy && confirm(text('Discard your unsaved edits and load the latest settings?', '放弃未保存的编辑并加载最新设置？'))) load();
+});
+$('reset').addEventListener('click', () => $('resetDialog').showModal());
+$('cancelReset').addEventListener('click', () => $('resetDialog').close());
+$('confirmReset').addEventListener('click', () => {
+  if (busy || !snapshot?.defaults) return;
+  populate({...snapshot.defaults, language:currentLang, instructions:retargetInstructionLanguage(snapshot.defaults.instructions, currentLang)});
+  fields.forEach(key => $(key).setCustomValidity(''));
+  notice = conflict ? 'conflict' : dirty() ? 'defaultsRestored' : 'ready';
+  $('resetDialog').close(); render();
+});
+window.addEventListener('beforeunload', event => { if (dirty()) { event.preventDefault(); event.returnValue = ''; } });
+render();
+load();
 
-// Initial boot
-applyLang();
-$('field-instructions').value = retargetInstructionLanguage($('field-instructions').value, currentLang);
-updateCharCount();
-loadSettings();
-
-</script>
-</body>
-</html>
+</script></body></html>
