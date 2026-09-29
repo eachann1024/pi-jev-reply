@@ -2,101 +2,67 @@
   <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/hero.png" alt="A reply passing through a clarity gate" width="100%" />
 </p>
 
-<h1 align="center">Pi Jev Reply</h1>
+# Pi Jev Reply
 
-<p align="center">
-  <strong>Make completed Pi replies clearer—only when wording is unclear.</strong><br />
-  Jev decides; your chosen model rewrites when needed. No second-pass recheck.
-</p>
+**Less noise. More clarity.** A finishing touch for replies in the Pi terminal.
 
-<p align="center">
-  <a href="#install">Install</a> · <a href="#workflow">Workflow</a> · <a href="#settings">Settings</a> · <a href="#privacy--cost">Privacy</a> · <a href="README.zh-CN.md">中文</a>
-</p>
+Plain-language rewrites, optional compact visuals, and your choice of model. If an edit fails, the original stays.
 
-> **What it is:** a Pi TUI extension that reviews an assistant's finished reply for jargon, unexplained abbreviations, and ambiguous phrasing. When useful, it can also add one small static visual.
+[中文](https://github.com/eachann1024/pi-jev-reply/blob/main/README.zh-CN.md)
 
-## Install
+## Start in a minute
 
 ```bash
-npm_config_registry=https://registry.npmjs.org pi install npm:@each1024/pi-jev-reply
+pi install npm:@each1024/pi-jev-reply
 ```
 
-Run `/reload`. The plugin is on by default. The session shows a `pi-jev-reply` mark when it reviews a reply. Open `/pi-jev-reply` only if you need settings (`/clear-reply` still works). Requires Pi `>= 0.85.1`, Node `>= 22.18.0`, and a Jev API key.
+Run `/reload` in Pi. On the **first interactive launch**, an English welcome page opens automatically. Click **Open settings**, choose your preferences, and save. Changes apply immediately.
 
-On first install the extension creates `clear-reply.json` with a settings UI language guessed from your locale (`zh*` → `zh-CN`, otherwise `en`). It does not open the settings page. Existing config files are never rewritten for language.
+- **English by default.** Chinese is available in settings. Existing language preferences are preserved.
+- **Your model, by default.** No Jev key? The extension uses your current Pi model directly.
+- **Quiet after setup.** The guide opens once. Reopen it with `/pi-jev-reply welcome`.
 
-## Workflow
+Requires Pi ≥ 0.85.1 and Node ≥ 22.18.0. Interactive TUI only; RPC and print modes never open a browser.
+
+## From draft to clear reply
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/workflow.svg" alt="Two-stage reply clarity workflow" width="760" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/workflow.svg" alt="Jev reviews the draft; your selected model edits it when needed" width="760" />
 </p>
 
-| Stage | Owner | Result |
+| Review | Refine | Return |
 | --- | --- | --- |
-| **Review** | Jev | Decides whether clarity or a visual is warranted. |
-| **Edit** | Main model by default | Rewrites the reply and/or adds a compact static visual, then shows it. |
+| With a key, Jev decides whether an edit helps. | Your current or selected model clarifies wording and can add a small table, diagram, or text chart. | The revised reply appears. Failed or invalid edits leave the original intact. |
 
-The extension keeps the original draft if a call fails, times out, or produces an invalid edit. It does not retry itself into a loop. Structural checks still reject edits that drop paths/commands or change numbers.
+Without a Jev key, enabled rewrites go directly to your model. There is no second review loop. Structural checks reject edits that drop commands or paths, or alter numbers—not a guarantee of factual accuracy.
 
-Explicit visual asks (flowchart / table / chart) and refusals are honored even if Jev is unsure, so those requests stay stable across runs.
+## Make it yours
 
-## What changes—and what never does
-
-| Can improve | Deliberately does not do |
-| --- | --- |
-| Black-box phrasing, unexplained acronyms, missing context, and vague conclusions | Invent facts, or silently replace a failed draft |
-| A small Markdown table, Mermaid `flowchart TD`, or text data chart when it helps | Generate Canvas, HTML, SVG, JavaScript, external embeds, or interactive visuals |
-| Wording with the current Pi model or a configured `provider/model` | Hardcode a provider or require a model named `loop` |
-
-## Controls
+<p align="center">
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/settings.png" alt="Local, on-demand settings" width="720" />
+</p>
 
 ```text
-/pi-jev-reply                 Open the local settings page
-/pi-jev-reply on | off        Toggle processing and save immediately
-/pi-jev-reply status          Show enabled state, Jev-key status, and active model
+/pi-jev-reply             Open settings
+/pi-jev-reply welcome     Reopen the welcome guide
+/pi-jev-reply on | off    Enable or disable
+/pi-jev-reply status      Check model and Jev-key status
 ```
 
-Settings apply immediately—no restart or `/reload` is needed after saving.
+Choose a model, control rewrites and visuals, and customize instructions. The local settings service starts for onboarding or on request, then closes after five idle minutes by default. `/clear-reply` remains an alias.
 
-## Settings without background noise
-
-<p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/settings.png" alt="On-demand local settings service" width="720" />
-</p>
-
-The bilingual (`en` / `zh-CN`) HTML settings page is served only on demand:
-
-- binds to `127.0.0.1` with a per-launch token, host/origin validation, CSP, and a bounded request body;
-- starts only from the settings command—no listener, polling, or heartbeat at idle;
-- stops after five idle minutes by default and starts fresh next time;
-- uses ETag/`If-Match` protection and atomic writes, so a stale tab cannot overwrite newer settings.
-
-The UI language changes only the settings page; it never changes the reply language.
-
-## Configuration
-
-`clear-reply.json` lives in the Pi agent directory (honouring `PI_CODING_AGENT_DIR`). Defaults are configurable: enablement, chosen rewrite model, rewrite/visual switches, thresholds, Jev model, timeouts, draft hiding, idle timeout, and custom review instructions.
-
-Jev credentials are read from, in order:
-
-1. `TYPESAFE_API_KEY`
-2. `~/.config/typesafe/api_key` (recommended mode: `600`)
-
-Keep tokens out of prompts, examples, issues, and source control.
+Settings live in `clear-reply.json` in your Pi agent directory (`PI_CODING_AGENT_DIR` is respected). Existing settings are not reset on upgrade. Switching language also retargets the built-in editing instructions; review custom instructions before saving.
 
 ## Privacy & cost
 
-For an eligible reply, Jev receives the draft, up to 2,000 characters of the current user request, and your custom instructions—not the full conversation or model thinking. Obvious credentials are skipped as a convenience, not as a complete secret scanner.
+- **Optional Jev:** set `TYPESAFE_API_KEY`, or place the key in `~/.config/typesafe/api_key` (recommended permissions: `600`). Keep keys out of chats and source control.
+- **What leaves your machine:** review receives the draft, up to 2,000 characters of the current request, and custom instructions—not the full conversation or model thinking. Editing sends the draft and request to your chosen model.
+- **Calls:** one Jev review when configured, plus one model completion if an edit is needed. Without Jev, enabled rewrites use one model completion.
+- **Local protection:** loopback-only settings, per-launch token, origin checks, and stale-save protection. Secret detection is best-effort, not a complete scanner.
 
-**Typical cost:** one Jev review; if editing is needed, one selected-model completion. Oversized drafts are skipped instead of truncated.
+Draft hiding works with Pi's native renderer; custom renderers may still show streamed drafts. Visuals are static Markdown/Mermaid/text, not interactive pages.
 
-## Boundaries
-
-- Pi **TUI sessions only**. JSON, RPC, and print modes are not changed.
-- Draft hiding relies on Pi's native Markdown transformer. Custom transcript renderers, including mini-mode, can still expose the earlier streamed draft.
-- The review is a clarity aid, not a factual, security, or safety guarantee.
-
-## Develop
+## Development
 
 ```bash
 npm install
