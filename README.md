@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/hero.png" alt="A reply passing through a clarity gate" width="100%" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/hero.png" alt="A reply passing through a clarity gate" width="100%" />
 </p>
 
 # Pi Jev Reply
@@ -27,7 +27,7 @@ Requires Pi ≥ 0.85.1 and Node ≥ 22.18.0. Interactive TUI only; RPC and print
 ## From draft to clear reply
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/workflow.svg" alt="Jev reviews the draft; your selected model edits it when needed" width="760" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/workflow.svg" alt="Jev reviews the draft; your selected model edits it when needed" width="760" />
 </p>
 
 | Review | Refine | Return |
@@ -39,7 +39,7 @@ Without a Jev key, enabled rewrites go directly to your model. There is no secon
 ## Make it yours
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/settings.png" alt="Local, on-demand settings" width="720" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/settings.png" alt="Local, on-demand settings" width="720" />
 </p>
 
 ```text

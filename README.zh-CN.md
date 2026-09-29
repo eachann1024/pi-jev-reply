@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/hero.png" alt="回复穿过清晰之门" width="100%" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/hero.png" alt="回复穿过清晰之门" width="100%" />
 </p>
 
 # Pi Jev Reply
@@ -27,7 +27,7 @@ pi install npm:@each1024/pi-jev-reply
 ## 从草稿到清晰回复
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/workflow.svg" alt="Jev 检查，所选模型编辑" width="760" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/workflow.svg" alt="Jev 检查，所选模型编辑" width="760" />
 </p>
 
 | 检查 | 润色 | 展示 |
@@ -39,7 +39,7 @@ pi install npm:@each1024/pi-jev-reply
 ## 按你的习惯设置
 
 <p align="center">
-  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.2/assets/settings.png" alt="按需开启的本地设置" width="720" />
+  <img src="https://unpkg.com/@each1024/pi-jev-reply@0.9.3/assets/settings.png" alt="按需开启的本地设置" width="720" />
 </p>
 
 ```text
