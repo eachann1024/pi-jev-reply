@@ -15,7 +15,9 @@
   "pi": {
     "extensions": [
       "./extensions/clear-reply.ts"
-    ]
+    ],
+    "video": "https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/docs/media/pi-jev-reply-best-zh.mp4",
+    "image": "https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/docs/media/pi-jev-reply-best-zh-poster.webp"
   },
   "files": [
     "extensions",
