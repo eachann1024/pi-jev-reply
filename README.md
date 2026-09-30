@@ -16,8 +16,6 @@ It rewrites replies in plain language, can add a compact visual, and uses the mo
 
 <video src="https://github.com/user-attachments/assets/5da022ba-7c33-4d1b-a949-ccb0f000b213" controls muted playsinline width="100%"></video>
 
-▶ 63-second demo (English narration): [Watch the video](https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-en.mp4) · [中文旁白版](https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4)
-
 ## Start in a minute
 
 ```bash

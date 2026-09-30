@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "check": "tsc --noEmit",
-    "test": "node test/check.mjs"
+    "test": "node test/check.mjs && node test/readme-media.mjs"
   },
   "peerDependencies": {
     "@earendil-works/pi-ai": ">=0.85.1",
