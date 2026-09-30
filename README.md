@@ -12,6 +12,16 @@ It rewrites replies in plain language, can add a compact visual, and uses the mo
 
 [中文](https://github.com/eachann1024/pi-jev-reply/blob/main/README.zh-CN.md)
 
+## Watch the demo
+
+<p align="center">
+  <video src="https://github.com/eachann1024/pi-jev-reply/raw/main/docs/media/pi-jev-reply-best-zh.mp4" poster="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/docs/media/pi-jev-reply-best-zh-poster.webp" controls muted playsinline width="100%">
+    <a href="https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4"><img src="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/docs/media/pi-jev-reply-best-zh-cover.jpg" alt="Watch the 63-second Pi Jev Reply demo: a jargon-filled reply is rewritten in plain language" width="100%" /></a>
+  </video>
+</p>
+
+▶ 63-second demo with Chinese narration: [Watch the video](https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4)
+
 ## Start in a minute
 
 ```bash
