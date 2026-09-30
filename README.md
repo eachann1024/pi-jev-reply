@@ -16,10 +16,6 @@ It rewrites replies in plain language, can add a compact visual, and uses the mo
 
 <video src="https://github.com/user-attachments/assets/78a21dfa-8221-49ff-9c81-cfe0682ce04b" controls muted playsinline width="100%"></video>
 
-<p align="center">
-  <a href="https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4"><img src="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/docs/media/pi-jev-reply-best-zh-cover.jpg" alt="Watch the 63-second Pi Jev Reply demo: click to play" width="720" /></a>
-</p>
-
 ▶ 63-second demo (Chinese narration): [Watch the video](https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4)
 
 ## Start in a minute
