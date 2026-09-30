@@ -14,7 +14,9 @@ It rewrites replies in plain language, can add a compact visual, and uses the mo
 
 ## Watch the demo
 
-<video src="https://github.com/user-attachments/assets/5da022ba-7c33-4d1b-a949-ccb0f000b213" controls muted playsinline width="100%"></video>
+https://github.com/user-attachments/assets/5da022ba-7c33-4d1b-a949-ccb0f000b213
+
+*Illustrative scenario: a scripted terminal session showing a failed `billing-api` deploy, not a live recording.*
 
 ## Start in a minute
 

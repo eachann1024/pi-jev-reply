@@ -14,7 +14,9 @@
 
 ## 演示视频
 
-<video src="https://github.com/user-attachments/assets/78a21dfa-8221-49ff-9c81-cfe0682ce04b" controls muted playsinline width="100%"></video>
+https://github.com/user-attachments/assets/78a21dfa-8221-49ff-9c81-cfe0682ce04b
+
+*示意场景：脚本化终端演示“billing-api 部署失败”，并非实时录屏。*
 
 ## 一分钟开始
 
