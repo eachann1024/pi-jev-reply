@@ -14,10 +14,10 @@
 
 ## 演示视频
 
+<video src="https://github.com/user-attachments/assets/78a21dfa-8221-49ff-9c81-cfe0682ce04b" controls muted playsinline width="100%"></video>
+
 <p align="center">
-  <video src="https://github.com/eachann1024/pi-jev-reply/raw/main/docs/media/pi-jev-reply-best-zh.mp4" poster="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/docs/media/pi-jev-reply-best-zh-poster.webp" controls muted playsinline width="100%">
-    <a href="https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4"><img src="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/docs/media/pi-jev-reply-best-zh-cover.jpg" alt="观看 63 秒 Pi Jev Reply 演示：行话回复被改写成直白的话" width="100%" /></a>
-  </video>
+  <a href="https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4"><img src="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/docs/media/pi-jev-reply-best-zh-cover.jpg" alt="观看 63 秒 Pi Jev Reply 演示：点击播放" width="720" /></a>
 </p>
 
 ▶ 63 秒演示视频： [点击观看](https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4)
