@@ -12,6 +12,16 @@
 
 [English](https://github.com/eachann1024/pi-jev-reply/blob/main/README.md)
 
+## 演示视频
+
+<p align="center">
+  <video src="https://github.com/eachann1024/pi-jev-reply/raw/main/docs/media/pi-jev-reply-best-zh.mp4" poster="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/docs/media/pi-jev-reply-best-zh-poster.webp" controls muted playsinline width="100%">
+    <a href="https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4"><img src="https://raw.githubusercontent.com/eachann1024/pi-jev-reply/main/docs/media/pi-jev-reply-best-zh-cover.jpg" alt="观看 63 秒 Pi Jev Reply 演示：行话回复被改写成直白的话" width="100%" /></a>
+  </video>
+</p>
+
+▶ 63 秒演示视频： [点击观看](https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4)
+
 ## 一分钟开始
 
 ```bash
