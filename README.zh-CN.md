@@ -16,7 +16,7 @@
 
 <video src="https://github.com/user-attachments/assets/78a21dfa-8221-49ff-9c81-cfe0682ce04b" controls muted playsinline width="100%"></video>
 
-▶ 63 秒演示视频： [点击观看](https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4)
+▶ 63 秒演示视频（中文旁白）： [点击观看](https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-zh.mp4) · [English narration](https://github.com/eachann1024/pi-jev-reply/blob/main/docs/media/pi-jev-reply-best-en.mp4)
 
 ## 一分钟开始
 
