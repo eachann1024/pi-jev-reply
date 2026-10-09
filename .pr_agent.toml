@@ -10,18 +10,24 @@ fallback_models = ["gemini/gemini-2.5-flash"]
 ai_timeout = 180
 
 [pr_reviewer]
+# 评论由 workflow 里 config.publish_output=false 关掉；这里只保留闸门要的字段，其余都关
+enable_help_text = false
+require_score_review = false
+require_todo_scan = false
+require_priority_files = false
+require_estimate_contribution_time_cost = false
 # 闸门读取这三个结构化字段：merge_recommendation / risk_level / security_concerns
 require_merge_recommendation = true      # safe_to_merge / merge_with_caution / changes_required
 require_risk_assessment = true           # low / medium / high
 require_security_review = true
 require_tests_review = false             # 团队规则不写测试，不让模型评价测试
-require_estimate_effort_to_review = true
-require_can_be_split_review = true
-enable_review_labels_security = true     # 发现安全问题时打 "possible security issue" 标签，闸门据此拦截
+require_estimate_effort_to_review = false   # 不要工作量估算
+require_can_be_split_review = false
+enable_review_labels_security = false    # 不打标签；安全判断看 security_concerns 字段
 enable_review_labels_effort = false
-persistent_comment = true
-inline_key_issues = true
-num_max_findings = 5
+persistent_comment = true                # publish_output=false 时不生效，保留无害
+inline_key_issues = false                # 不发行内评论
+num_max_findings = 3
 extra_instructions = """\
 你是这个仓库的合并闸门审核员。结构化字段会被脚本直接用来决定是否自动合并，按下面口径给：
 - 致命问题（必须 merge_recommendation=changes_required 且 risk_level=high）：崩溃、白屏、启动失败；数据丢失或损坏；
