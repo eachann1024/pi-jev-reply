@@ -8,6 +8,11 @@
 # 本 workflow 不 checkout、不执行 PR 代码，PR-Agent 只通过 API 读 diff。
 #
 # 需要的 secret：GEMINI_API_KEY（Google AI Studio）。其他用自带的 GITHUB_TOKEN。
+#
+# 只给仓库主人的 PR 审核和合并：作者不是 ALLOWED_AUTHORS 的 PR 两个 job 都跳过（省额度、不发评论）。
+# 外部 fork 的 PR 两个 job 都跳过，拿不到 secret，也不会合并。
+# 评论精简：PR-Agent 不发评论（config.publish_output=false），结构化结论只进 job 输出；
+#   闸门通过时发一行结论，拦截时发一条短评论（结论 + 最多 3 条原因），详细结论写在 Actions 运行摘要里。
 
 name: AI review & auto-merge
 
@@ -34,9 +39,10 @@ env:
 jobs:
   review:
     name: ai-review
-    # 只审同仓库分支的非草稿 PR；labeled 事件只在加的是自动合并标签时才触发
+    # 只审同仓库分支、作者是仓库主人的非草稿 PR（作者名与 env.ALLOWED_AUTHORS 保持一致）；labeled 事件只在加的是自动合并标签时才触发
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'eachann1024' &&
       github.event.pull_request.draft == false &&
       (github.event.action != 'labeled' || github.event.label.name == 'bot-automerge')
     runs-on: ubuntu-24.04
@@ -65,6 +71,8 @@ jobs:
           github_action_config.push_trigger_ignore_bot_commits: "false"
           github_action_config.push_commands: '["/review"]'
           github_action_config.fail_on_tool_errors: "true"
+          # 不发 PR-Agent 自己的长评论、行内评论和标签；结构化结论仍写进 job 输出给闸门
+          config.publish_output: "false"
           config.propagate_tool_errors: "true"
           # 其余审核参数（中文、严重度字段、额外指令）在默认分支的 .pr_agent.toml 里
 
@@ -75,6 +83,7 @@ jobs:
     if: >-
       !cancelled() &&
       github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'eachann1024' &&
       github.event.pull_request.draft == false &&
       (github.event.action != 'labeled' || github.event.label.name == 'bot-automerge')
     runs-on: ubuntu-24.04
@@ -112,15 +121,42 @@ jobs:
           def api(path):
               return json.loads(gh("api", path))
 
+          def short(s, n=120):
+              s = " ".join(str(s).split())
+              return s if len(s) <= n else s[:n - 1] + "…"
+
+          def verdict(review):
+              if not review:
+                  return "无审核结果"
+              return f"{review.get('merge_recommendation', '?')} / 风险 {review.get('risk_level', '?')}"
+
           def block_merge(reasons):
               gh("label", "create", block, "-R", repo, "--color", "B60205",
                  "--description", "AI 闸门判定需要人工处理", check=False)
-              gh("pr", "edit", pr, "-R", repo, "--add-label", block, check=False)
-              body = "### 🤖 自动合并已拦截\n\n" + "\n".join(f"- {r}" for r in reasons) + \
-                     f"\n\n审核提交：`{sha[:7]}`。修复后推新提交会重新审核。"
+              gh("api", "-X", "POST", f"repos/{repo}/issues/{pr}/labels", "-f", f"labels[]={block}", check=False)
+              # 结论行已写了建议和风险，要点里优先放具体原因
+              reasons = sorted(reasons, key=lambda r: r.startswith(("合并建议为", "风险等级为")))
+              lines = [f"- {short(r)}" for r in reasons[:3]]
+              if len(reasons) > 3:
+                  lines.append(f"- 另有 {len(reasons) - 3} 条，见 Actions 运行摘要")
+              body = (f"### 🤖 自动合并已拦截\n结论：{verdict(review)}\n" + "\n".join(lines) +
+                      f"\n\n审核提交：`{sha[:7]}`")
               gh("pr", "comment", pr, "-R", repo, "--body", body, check=False)
               print("BLOCKED:", reasons)
               sys.exit(0)
+
+          review = {}
+          try:
+              review = json.loads(env.get("REVIEW_JSON") or "{}") or {}
+          except Exception:
+              review = None
+          # 详细结论只写进 Actions 运行摘要，不发评论
+          try:
+              with open(env["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as fh:
+                  fh.write("## AI 审核结论\n\n```json\n" +
+                           json.dumps(review, ensure_ascii=False, indent=2)[:60000] + "\n```\n")
+          except Exception:
+              pass
 
           info = api(f"repos/{repo}/pulls/{pr}")
           labels = {l["name"] for l in info["labels"]}
@@ -133,17 +169,16 @@ jobs:
           reasons = []
           allowed = {a.strip() for a in env["ALLOWED_AUTHORS"].split(",") if a.strip()}
           if info["user"]["login"] not in allowed:
-              reasons.append(f"作者 {info['user']['login']} 不在自动合并白名单")
+              # 不是仓库主人的 PR：只审不合，也不发评论
+              print("author not allowed; review only"); sys.exit(0)
 
           # 1) 审核本身必须成功且有结构化结果（超时/报错/无输出 = 不合并）
           if env["REVIEW_RESULT"] != "success":
               reasons.append(f"AI 审核未成功完成（{env['REVIEW_RESULT']}），按规则不自动合并")
-          review = {}
-          try:
-              review = (json.loads(env.get("REVIEW_JSON") or "{}") or {})
-          except Exception:
+          if review is None:
+              review = {}
               reasons.append("AI 审核输出无法解析")
-          if not review:
+          elif not review:
               reasons.append("没有拿到 AI 审核的结构化结果")
           else:
               rec = str(review.get("merge_recommendation", "")).strip()
@@ -181,6 +216,11 @@ jobs:
                       text = f"{it.get('issue_header', '')} {it.get('issue_content', '')}"
                       if fatal_kw.search(text):
                           reasons.append("审核意见涉及安全/鉴权/计费/数据/迁移：" + str(it.get("issue_header", ""))[:120])
+              if rec == "changes_required":
+                  for it in issues:
+                      if isinstance(it, dict):
+                          reasons.append("要改：" + short(f"{str(it.get('relevant_file', '')).strip()} "
+                                                       f"{str(it.get('issue_header', '')).strip()}：{it.get('issue_content', '')}"))
           if any("security" in l.lower() for l in labels):
               reasons.append("PR 带有安全疑虑标签")
 
@@ -238,5 +278,7 @@ jobs:
                               "--match-head-commit", sha], capture_output=True, text=True)
           if r.returncode != 0:
               block_merge([f"合并调用失败：{(r.stderr or r.stdout).strip()[:300]}"])
+          gh("pr", "comment", pr, "-R", repo, "--body",
+             f"✅ AI 审核通过（{verdict(review)}），已自动合并 `{sha[:7]}`", check=False)
           print("MERGED", repo, pr, sha)
           PY
