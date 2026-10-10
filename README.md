@@ -24,7 +24,7 @@ https://github.com/user-attachments/assets/5da022ba-7c33-4d1b-a949-ccb0f000b213
 pi install npm:@each1024/pi-jev-reply
 ```
 
-Run `/reload` in Pi. On the **first interactive launch**, an English welcome page opens automatically. Choose **Open settings**, set your preferences, and save. Changes apply immediately.
+Run `/reload` in Pi. On the **first interactive launch**, an English welcome page opens automatically. Choose **Open settings** and adjust your preferences. Changes save automatically.
 
 - **English by default.** Chinese is available in settings. An existing language preference is preserved.
 - **Your current model by default.** Without a Jev key, the extension sends rewrites directly to your current Pi model.
@@ -38,7 +38,7 @@ Requires Pi ≥ 0.85.1 and Node ≥ 22.18.0. The browser opens only in the inter
 | --- | --- | --- |
 | With a key, Jev decides whether an edit would help. | Your current or selected model clarifies the wording and may add a small table, diagram, or text chart. | The revised reply replaces the draft. A failed or invalid edit leaves the original intact. |
 
-Without a Jev key, an enabled rewrite goes directly to your model. There is no second review. Structural checks reject edits that drop commands or paths, or change numbers. They do not guarantee factual accuracy.
+Without a Jev key, enabled rewriting goes directly to your selected or current model; the review thresholds do not apply. Visuals are added only for recognized explicit requests when visuals are enabled. With or without Jev, a request to omit visuals takes priority. Structural checks reject edits that drop protected references or change numbers. They do not guarantee factual accuracy.
 
 ## Make it yours
 
@@ -57,7 +57,7 @@ Without a Jev key, an enabled rewrite goes directly to your model. There is no s
 
 Choose a model, control rewrites and visuals, and customize the instructions. The local settings service starts for onboarding or when requested, then closes after five idle minutes by default. `/clear-reply` remains an alias.
 
-Settings are stored in `clear-reply.json` in your Pi agent directory. `PI_CODING_AGENT_DIR` is respected, and existing settings are not reset on upgrade. Changing the language also changes the built-in editing instructions, so review any custom instructions before saving.
+Settings are stored in `clear-reply.json` in your Pi agent directory. `PI_CODING_AGENT_DIR` is respected, and existing settings are not reset on upgrade. Changing the language also changes the built-in editing instructions, so verify any custom instructions after switching.
 
 ## Privacy and cost
 

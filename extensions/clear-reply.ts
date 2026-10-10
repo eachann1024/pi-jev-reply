@@ -211,15 +211,15 @@ export default function clearReply(pi: ExtensionAPI) {
   }
 
   const command = {
-    description: "Open reply settings; manage rewriting, models, and preferences",
+    description: "Reply settings and guide; usage: /pi-jev-reply-setting [settings|welcome|on|off|status]",
     handler: async (args: string, ctx: ExtensionContext) => {
       const action = args.trim().toLowerCase();
       if (!action || action === "settings") { await openSettings(ctx); return; }
       if (action === "welcome") { await openSettings(ctx, true); return; }
       if (action === "status") {
         ctx.ui.notify(copy(
-          `pi-jev-reply: ${active() ? "enabled" : "inactive"}; Jev key ${key ? "configured" : "missing, using current model or other"}; model ${settings.rewriteModel || "current main model"}.`,
-          `pi-jev-reply：${active() ? "已启用" : "未启用"}；Jev 密钥${key ? "已配置" : "未配置，走当前主模型或 other"}；模型：${settings.rewriteModel || "当前主模型"}。`,
+          `pi-jev-reply: ${active() ? "enabled" : "inactive"}; Jev key ${key ? "configured" : "not configured (Jev review skipped)"}; model ${settings.rewriteModel || "current main model"}.`,
+          `pi-jev-reply：${active() ? "已启用" : "未启用"}；Jev 密钥${key ? "已配置" : "未配置（跳过 Jev 审核）"}；模型：${settings.rewriteModel || "当前主模型"}。`,
         ), "info");
         return;
       }

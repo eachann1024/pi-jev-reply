@@ -16,11 +16,11 @@
 <ol class="steps" aria-label="Getting started">
 <li><span class="number">01 / SETTINGS</span><h2>Make it yours.</h2><p>Open settings below. English is the default; Chinese is available there too.</p></li>
 <li><span class="number">02 / YOUR MODEL</span><h2>Keep what works.</h2><p>Use your current Pi model, or choose another. Turn rewriting and small visuals on or off.</p></li>
-<li><span class="number">03 / READY</span><h2>Save. Keep going.</h2><p>Changes apply immediately. Return to Pi and send your next message.</p></li>
+<li><span class="number">03 / READY</span><h2>Changes apply automatically.</h2><p>Preferences save automatically. Return to Pi and continue your conversation.</p></li>
 </ol>
 <div class="actions"><a class="button" id="open-settings" href="/">Open settings <span aria-hidden="true">&nbsp;↗</span></a><span class="hint">Later, type <code>/pi-jev-reply-setting</code> in Pi.</span></div>
 <p class="hint" id="connection" role="status" aria-live="polite">Checking your local settings…</p>
-<details><summary>About Jev, privacy &amp; recovery</summary><p>With a Jev key, Jev reviews eligible replies before your model edits them. Without one, the extension uses your current model directly.</p><p>To enable Jev, set <code>TYPESAFE_API_KEY</code> before starting Pi, or save your key in <code>~/.config/typesafe/api_key</code>. Never put a key in a chat.</p><p>Review sends the draft and a short excerpt of your request to Jev. Editing sends them to your selected model. Failed edits keep the original reply.</p><p>This local page expires after inactivity (five minutes by default). Reopen with <code>/pi-jev-reply-setting welcome</code>.</p></details>
+<details><summary>About Jev, privacy &amp; recovery</summary><p>With a Jev key, Jev reviews eligible replies to decide whether an edit would help. Without one, enabled rewriting goes directly to your selected or current Pi model, with an available fallback if needed.</p><p>To enable Jev, set <code>TYPESAFE_API_KEY</code> before starting Pi, or save your key in <code>~/.config/typesafe/api_key</code>. Never put a key in a chat.</p><p>Review sends the draft, up to 2,000 characters of your request, and editing instructions to Jev. Editing sends the draft and request to your chosen model. Failed or invalid edits keep the original reply.</p><p>This local page expires after inactivity (five minutes by default). Reopen with <code>/pi-jev-reply-setting welcome</code>.</p></details>
 <footer>Runs in interactive Pi sessions. No account setup on this page. You can close it at any time.</footer>
 </main>
 <script>

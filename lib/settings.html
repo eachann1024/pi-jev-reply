@@ -94,21 +94,21 @@ dialog .actions{margin-top:24px;justify-content:flex-end}
 <input id="enabled" type="checkbox">
 <span>
 <strong data-zh="启用回复处理" data-en="Enable reply processing">Enable reply processing</strong>
-<small data-zh="发送回复前进行审核和处理。" data-en="Review and process replies before delivery.">Review and process replies before delivery.</small>
+<small data-zh="对符合处理条件的回复进行润色；配置 Jev 后，先由 Jev 判断是否需要修改。" data-en="Refine eligible replies; with a Jev key, review them first to decide whether an edit would help.">Refine eligible replies; with a Jev key, review them first to decide whether an edit would help.</small>
 </span>
 </label>
 <label class="check">
 <input id="rewrite" type="checkbox">
 <span>
 <strong data-zh="启用改写" data-en="Enable rewriting">Enable rewriting</strong>
-<small data-zh="含糊程度达到阈值时，调用所选模型。" data-en="Use the selected model when unclear wording reaches the threshold.">Use the selected model when unclear wording reaches the threshold.</small>
+<small data-zh="由所选模型理清措辞。配置 Jev 后按审核结果触发；未配置时直接改写符合条件的回复。" data-en="Clarify wording with your chosen model. With Jev, review decides when to rewrite; without it, eligible replies are rewritten directly.">Clarify wording with your chosen model. With Jev, review decides when to rewrite; without it, eligible replies are rewritten directly.</small>
 </span>
 </label>
 <label class="check">
 <input id="visuals" type="checkbox">
 <span>
-<strong data-zh="启用可视化建议" data-en="Suggest visuals">Suggest visuals</strong>
-<small data-zh="建议图表与结构化表达，不为装饰而配图。" data-en="Suggest diagrams, charts and structured tables.">Suggest diagrams, charts and structured tables.</small>
+<strong data-zh="允许添加图表" data-en="Allow visuals">Allow visuals</strong>
+<small data-zh="添加有助于理解的表格、流程图或文字图表。未配置 Jev 时，仅在请求明确要求图表时添加。" data-en="Add a useful table, diagram or text chart. Without Jev, visuals are added only when explicitly requested.">Add a useful table, diagram or text chart. Without Jev, visuals are added only when explicitly requested.</small>
 </span>
 </label>
 <label class="check">
@@ -147,7 +147,7 @@ dialog .actions{margin-top:24px;justify-content:flex-end}
 <input id="visualThreshold" type="number" min="0" max="1" step="any" required>
 </div>
 </div>
-<p class="hint" data-zh="含糊得分 ≥ 改写阈值时改写；可视化机会得分 > 阈值时建议配图。" data-en="Rewrite at or above the unclear-wording threshold; suggest visuals above the opportunity threshold.">Rewrite at or above the unclear-wording threshold; suggest visuals above the opportunity threshold.</p>
+<p class="hint" data-zh="仅用于 Jev 审核：含糊得分 ≥ 改写阈值时改写；图表类型概率 ≥ 图表阈值且置信度 ≥ 0.6 时添加。图表开关开启时，明确的图表请求优先于审核结果；拒绝图表的请求始终优先。" data-en="Jev review only: rewrite when the clarity score reaches its threshold; add a visual when its type probability reaches the visual threshold and confidence is at least 0.6. Explicit requests override review when visuals are enabled; refusals always take priority.">Jev review only: rewrite when the clarity score reaches its threshold; add a visual when its type probability reaches the visual threshold and confidence is at least 0.6. Explicit requests override review when visuals are enabled; refusals always take priority.</p>
 <div class="field">
 <label for="jevModel" data-zh="Jev 审核模型" data-en="Jev review model">Jev review model</label>
 <input id="jevModel" type="text" maxlength="80" pattern="[a-zA-Z0-9_.-]+" required>
@@ -183,7 +183,7 @@ dialog .actions{margin-top:24px;justify-content:flex-end}
 <div class="save-info">
 <button id="retry" type="button" hidden>Retry</button>
 <button id="reload" type="button" hidden>Reload settings</button>
-<p data-zh="修改会自动保存。界面语言也会切换默认润色指令；自定义文字会保留。" data-en="Changes save automatically. Changing language updates preset rewrite instructions; custom instructions are preserved.">Changes save automatically. Changing language updates preset rewrite instructions; custom instructions are preserved.</p>
+<p data-zh="修改会自动保存。界面语言也会切换内置润色指令；自定义指令会保留。" data-en="Changes save automatically. Changing language updates preset rewrite instructions; custom instructions are preserved.">Changes save automatically. Changing language updates preset rewrite instructions; custom instructions are preserved.</p>
 </div>
 <div class="actions">
 <button id="reset" disabled type="button" data-zh="恢复默认" data-en="Reset defaults">Reset defaults</button>
@@ -194,7 +194,7 @@ dialog .actions{margin-top:24px;justify-content:flex-end}
 <strong id="status" class="language-status" role="status" aria-live="polite">Loading settings…</strong>
 <dialog id="resetDialog" aria-labelledby="resetTitle">
 <h2 id="resetTitle" data-zh="恢复默认设置？" data-en="Restore default settings?">Restore default settings?</h2>
-<p data-zh="恢复默认设置，并保留当前界面语言。修改仍需保存。" data-en="Restore defaults and keep your interface language. Save to apply the change.">Restore defaults and keep your interface language. Save to apply the change.</p>
+<p data-zh="恢复默认设置并保留当前界面语言，修改会自动保存。" data-en="Restore default settings and keep your interface language. Changes save automatically.">Restore default settings and keep your interface language. Changes save automatically.</p>
 <div class="actions">
 <button id="cancelReset" type="button" autofocus data-zh="取消" data-en="Cancel">Cancel</button>
 <button id="confirmReset" type="button" class="primary" data-zh="确认恢复" data-en="Restore defaults">Restore defaults</button>
@@ -214,12 +214,12 @@ const I18N = {
     'zh-CN': 'Typesafe API 密钥：未配置'
   },
   keyHelp: {
-    en: 'Optional. Without a key the plugin still runs, using the current model or another available model named other. To use Jev, set TYPESAFE_API_KEY or write ~/.config/typesafe/api_key.',
-    'zh-CN': '可选。未配置时插件仍可用，走当前主模型，没有主模型则用 other。要用 Jev，请设置 TYPESAFE_API_KEY 或写入 ~/.config/typesafe/api_key。'
+    en: 'Optional. Without a key, enabled rewriting goes directly to your selected or current model (or an available fallback). To use Jev review, set TYPESAFE_API_KEY or ~/.config/typesafe/api_key.',
+    'zh-CN': '可选。未配置时，已启用的改写直接使用所选模型或当前模型（若不可用则选用可用备用模型）。要启用 Jev 审核，请设置 TYPESAFE_API_KEY 或 ~/.config/typesafe/api_key。'
   },
   privacyText: {
-    en: 'Privacy note: If a Jev key is configured, Jev receives reply drafts to evaluate clarity and structure. Without a key, the current model or other handles the pass. Optional rewrite uses the selected model only when triggered.',
-    'zh-CN': '隐私说明：配置了 Jev 密钥时，审核服务会接收回复草稿以评估清晰度与结构。未配置则由当前主模型或 other 处理。可选改写仅在触发时使用所选模型。'
+    en: 'Privacy: Jev review sends the draft, up to 2,000 characters of your request, and editing instructions to Jev. Editing sends the draft and request to your chosen model, even without a Jev key.',
+    'zh-CN': '隐私：Jev 审核会将草稿、最多 2,000 字符的用户请求和编辑指令发送给 Jev。编辑会将草稿与请求发送给所选模型；未配置 Jev 密钥时也会调用模型服务。'
   },
   currentModelPrefix: {
     en: 'Current main model: ',
@@ -254,8 +254,8 @@ const I18N = {
     'zh-CN': '已保存'
   },
   defaultsRestored: {
-    en: 'Defaults restored in form (unsaved)',
-    'zh-CN': '已恢复默认值（待保存）'
+    en: 'Defaults restored',
+    'zh-CN': '已恢复默认值'
   },
   invalidSettings: {
     en: 'Check the settings values and configured model name.',
@@ -274,8 +274,8 @@ const I18N = {
     'zh-CN': '无法读取 clear-reply.json。请修复文件后再保存；原文件未被覆盖。'
   },
   networkError: {
-    en: 'Connection lost. Settings service stops after idle timeout; reopen /clear-reply settings from Pi.',
-    'zh-CN': '连接已断开。设置服务在空闲超时后自动退出；请在 Pi 中重新执行 /clear-reply settings。'
+    en: 'Connection lost. Settings service stops after idle timeout; reopen /pi-jev-reply-setting from Pi.',
+    'zh-CN': '连接已断开。设置服务在空闲超时后自动退出；请在 Pi 中重新执行 /pi-jev-reply-setting。'
   }
 };
 
@@ -320,8 +320,8 @@ Object.assign(I18N, {
   forbidden: {en:'Access expired or denied. Open /pi-jev-reply-setting from Pi again.', 'zh-CN':'访问已过期或被拒绝。请在 Pi 中重新执行 /pi-jev-reply-setting。'},
   conflict: {en:'Settings changed elsewhere. Your edits are preserved. Reload explicitly to discard them and get the latest settings.', 'zh-CN':'设置已在别处修改。当前编辑已保留；明确重新加载后才会丢弃编辑并读取最新设置。'},
   keyPending: {en:'Jev key status unavailable', 'zh-CN':'Jev 密钥状态尚不可用'},
-  keyHelp: {en:'Jev is optional. Without a key, enabled rewriting goes directly to the selected or current model. If neither is available, Pi uses an available fallback. Set TYPESAFE_API_KEY or ~/.config/typesafe/api_key to enable Jev review.', 'zh-CN':'Jev 可选。未配置密钥时，已启用的改写直接使用所选模型或当前模型；两者不可用时会选用可用的备用模型。设置 TYPESAFE_API_KEY 或 ~/.config/typesafe/api_key 可启用 Jev 审核。'},
-  privacyText: {en:'With a key, Jev receives reply drafts for review. When rewriting is triggered, the selected model receives the draft and user request.', 'zh-CN':'配置密钥后，Jev 会接收回复草稿进行审核。触发改写时，所选模型会接收草稿与用户请求。'},
+  keyHelp: {en:'Jev is optional. Without a key, enabled rewriting goes directly to the selected or current model (or an available fallback). Set TYPESAFE_API_KEY or ~/.config/typesafe/api_key to enable Jev review.', 'zh-CN':'Jev 可选。未配置密钥时，已启用的改写直接使用所选模型或当前模型（若不可用则选用可用备用模型）。设置 TYPESAFE_API_KEY 或 ~/.config/typesafe/api_key 可启用 Jev 审核。'},
+  privacyText: {en:'Jev review sends the draft, up to 2,000 characters of your request, and editing instructions to Jev. Editing sends the draft and request to your chosen model, even without a Jev key.', 'zh-CN':'Jev 审核会将草稿、最多 2,000 字符的用户请求和编辑指令发送给 Jev。编辑会将草稿与请求发送给所选模型；未配置 Jev 密钥时也会调用模型服务。'},
   networkError: {en:'Connection lost. Your edits are preserved. Retry, or reopen /pi-jev-reply-setting from Pi if the service has stopped.', 'zh-CN':'连接已断开，当前编辑已保留。可重试；若服务已停止，请在 Pi 中重新执行 /pi-jev-reply-setting。'}
 });
 function read() {
