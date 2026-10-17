@@ -1,0 +1,113 @@
+name: Release on push
+
+# 推到 main 且插件源码或发布文件有变化时，自动发布到 npm（Pi 插件市场按 pi-package 关键字从 npm 收录）。
+# 只改文档或 CI 的提交不在 paths 里，不会触发；距上次发布的标签源码没变也会跳过。
+# 版本号：package.json 比 npm 和标签里的最高版本都高（手动升过）就用它；否则末位 +1，发布后提交回 main。
+# 回写提交由 GITHUB_TOKEN 推送并带 [skip ci]，GitHub 不会因此再触发工作流，不会循环。
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'extensions/**'
+      - 'lib/**'
+      - 'assets/**'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-release-${{ github.repository }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_PATHS: extensions lib assets package.json package-lock.json
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      - name: Decide version
+        id: plan
+        run: node .github/scripts/pi-release.mjs
+      - name: Restore a missing GitHub Release for the published version
+        if: steps.plan.outputs.action == 'skip'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ steps.plan.outputs.name }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          if gh release view "v$VERSION" >/dev/null 2>&1; then exit 0; fi
+          mkdir -p "$RUNNER_TEMP/release"
+          npm pack "$NAME@$VERSION" --pack-destination "$RUNNER_TEMP/release"
+          gh release create "v$VERSION" "$RUNNER_TEMP"/release/*.tgz --verify-tag --title "v$VERSION" --generate-notes
+      - run: npm install --global npm@11 --registry=https://registry.npmjs.org
+        if: steps.plan.outputs.action == 'publish'
+      - name: Prepare release commit
+        id: commit
+        if: steps.plan.outputs.action == 'publish'
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          if [ "${{ steps.plan.outputs.bumped }}" = "true" ]; then
+            npm version "$VERSION" --no-git-tag-version --allow-same-version
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add package.json package-lock.json
+            git commit -m "chore(release): v$VERSION [skip ci]"
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - run: npm ci --ignore-scripts
+        if: steps.plan.outputs.action == 'publish'
+      - run: npm run check
+        if: steps.plan.outputs.action == 'publish'
+      - name: Pack and tag the exact release source
+        if: steps.plan.outputs.action == 'publish'
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+          SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/release"
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/release"
+          # 标签先于 npm 发布并固定在打包提交上：发布失败只会留下空号，重跑会跳过它，不会重复发布。
+          git tag "v$VERSION" "$SHA"
+          git push origin "refs/tags/v$VERSION"
+      - name: Publish to npm
+        if: steps.plan.outputs.action == 'publish'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish "$RUNNER_TEMP"/release/*.tgz --access public
+      - name: Commit version back to main
+        if: steps.plan.outputs.action == 'publish' && steps.plan.outputs.bumped == 'true'
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          for attempt in 1 2 3; do
+            git push origin HEAD:main && exit 0
+            if ! git pull --rebase origin main; then git rebase --abort || true; break; fi
+          done
+          echo "::warning::npm 已发布 $VERSION（标签已建），但版本号回写 main 失败；下次发布会在最高版本上继续 +1，不会重复。"
+      - name: GitHub Release
+        if: steps.plan.outputs.action == 'publish'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ steps.plan.outputs.name }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          gh release create "v$VERSION" "$RUNNER_TEMP"/release/*.tgz --verify-tag --title "v$VERSION" --generate-notes \
+            --notes "npm: \`$NAME@$VERSION\` · 安装：\`pi install npm:$NAME\`"
