@@ -64,42 +64,56 @@ jobs:
           console.log(`${pkg.name}: package.json ${pkg.version}, npm highest ${highest ?? 'none'} -> publish ${version}${bumped ? ' (auto patch bump)' : ''}`);
           appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nbumped=${bumped}\nname=${pkg.name}\n`);
           NODE
-      - name: Set version
-        if: steps.version.outputs.bumped == 'true'
-        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
-      - run: npm ci --ignore-scripts
-      - run: npm run check
-      - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public --ignore-scripts
-      - name: Commit version back to main
+      - name: Prepare release commit
         id: commit
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           if [ "${{ steps.version.outputs.bumped }}" = "true" ]; then
+            npm version "$VERSION" --no-git-tag-version --allow-same-version
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add package.json package-lock.json
             git commit -m "chore(release): v$VERSION [skip ci]"
-            for attempt in 1 2 3; do
-              if git push origin HEAD:main; then break; fi
-              [ "$attempt" = 3 ] && { echo "::warning::npm 已发布 $VERSION，但版本号回写 main 失败；下次发布会在 npm 最新版上继续 +1。"; exit 0; }
-              git pull --rebase origin main
-            done
           fi
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-      - name: Tag and GitHub Release
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - name: Pack the exact release tarball
+        run: |
+          mkdir -p "$RUNNER_TEMP/release"
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/release"
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish "$RUNNER_TEMP"/release/*.tgz --access public
+      - name: Tag the published source
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          # 标签固定指向打包时的提交，回写 main 时即使要 rebase，也不影响标签和附件。
+          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null; then
+            echo "v$VERSION already exists; keep it"
+          else
+            git tag "v$VERSION" "$SHA"
+            git push origin "refs/tags/v$VERSION"
+          fi
+      - name: Commit version back to main
+        if: steps.version.outputs.bumped == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          for attempt in 1 2 3; do
+            git push origin HEAD:main && exit 0
+            if ! git pull --rebase origin main; then git rebase --abort || true; break; fi
+          done
+          echo "::warning::npm 已发布 $VERSION（标签已建），但版本号回写 main 失败；下次发布会在 npm 最高版上继续 +1，不会重复。"
+      - name: GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
-          TARGET: ${{ steps.commit.outputs.sha }}
         run: |
-          if gh release view "v$VERSION" >/dev/null 2>&1 || git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null; then
-            echo "v$VERSION already exists; skip"
-            exit 0
-          fi
-          npm pack --ignore-scripts
-          gh release create "v$VERSION" ./*.tgz --target "$TARGET" --title "v$VERSION" --generate-notes \
+          if gh release view "v$VERSION" >/dev/null 2>&1; then echo "release v$VERSION exists"; exit 0; fi
+          gh release create "v$VERSION" "$RUNNER_TEMP"/release/*.tgz --verify-tag --title "v$VERSION" --generate-notes \
             --notes "npm: \`${{ steps.version.outputs.name }}@$VERSION\` · 安装：\`pi install npm:${{ steps.version.outputs.name }}\`"
